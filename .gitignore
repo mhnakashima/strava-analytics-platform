@@ -58,3 +58,6 @@ logs/
 
 # Alembic
 backend/alembic/versions/*.pyc
+
+# Docs (local notes, icons, sensitive files)
+docs/
