@@ -13,37 +13,24 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Parse inline — never rely on @property evaluated after startup
-_cors_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
-
+# Auth uses Authorization: Bearer <JWT>, not cookies, so allow_origins=["*"]
+# with allow_credentials=False is both correct and avoids origin-matching issues.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
-
-
-def _cors_headers(request: Request) -> dict:
-    """Return CORS headers for the request's origin if it is allowed."""
-    origin = request.headers.get("origin", "")
-    if origin in _cors_origins:
-        return {
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Credentials": "true",
-        }
-    return {}
 
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    """Ensure CORS headers are always present, even on unhandled 500 errors."""
+    """Return CORS-safe JSON for unhandled 500 errors."""
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"},
-        headers=_cors_headers(request),
+        headers={"Access-Control-Allow-Origin": "*"},
     )
 
 
