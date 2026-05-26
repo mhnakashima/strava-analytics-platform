@@ -1,4 +1,4 @@
-import { formatDistance, formatDuration, formatPace } from '../../lib/utils';
+import { formatPace } from '../../lib/utils';
 import type { ActivityKPIs } from '../../types';
 
 interface KPICardProps {
