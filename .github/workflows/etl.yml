@@ -1,0 +1,53 @@
+name: ETL — Daily Strava Sync
+
+on:
+  schedule:
+    # Executa diariamente às 02:00 UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    # Permite execução manual pelo painel do GitHub
+    inputs:
+      athlete_id:
+        description: "Athlete ID específico (opcional — deixe vazio para todos)"
+        required: false
+        default: ""
+
+jobs:
+  etl:
+    name: Strava ETL Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: etl/requirements.txt
+
+      - name: Install ETL dependencies
+        working-directory: etl
+        run: pip install -r requirements.txt
+
+      - name: Run ETL pipeline
+        working-directory: etl
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          ETL_LOG_LEVEL: INFO
+          ETL_BATCH_SIZE: 100
+        run: python runner.py --once
+
+      - name: Upload ETL logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: etl-logs-${{ github.run_id }}
+          path: etl/logs/
+          retention-days: 14
+          if-no-files-found: ignore

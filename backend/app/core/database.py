@@ -3,7 +3,15 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.core.config import settings
 
-engine = create_engine(settings.database_url, pool_pre_ping=True, pool_size=10, max_overflow=20)
+# Neon and Supabase require SSL — sslmode=require in the URL is enough.
+# pool_size=5 is safe for Render's free tier (limited connections).
+engine = create_engine(
+    settings.database_url,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    connect_args={"sslmode": "require"} if "neon.tech" in settings.database_url or "supabase" in settings.database_url else {},
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

@@ -109,5 +109,9 @@ def run_all() -> None:
 
 if __name__ == "__main__":
     import sys
-    if "--once" in sys.argv:
+
+    if "--once" in sys.argv or len(sys.argv) == 1:
+        # Modo direto: usado pelo GitHub Actions e execução manual
         run_all()
+    else:
+        print("Usage: python runner.py --once")

@@ -10,7 +10,8 @@ from sqlalchemy.dialects.postgresql import insert
 
 from config import DATABASE_URL
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+_ssl_args = {"sslmode": "require"} if any(h in (DATABASE_URL or "") for h in ("neon.tech", "supabase")) else {}
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=_ssl_args)
 
 
 def upsert_activities(df: pd.DataFrame, athlete_id: int) -> int:
