@@ -1,5 +1,3 @@
-from typing import Any
-from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,21 +23,13 @@ class Settings(BaseSettings):
     # Server
     port: int = 8000
 
-    # CORS — accepts a JSON array OR a comma-separated string from env vars
-    cors_origins: list[str] = ["http://localhost:5173"]
+    # CORS — stored as plain string; use cors_origins_list for the parsed list.
+    # Set as comma-separated: "https://app.vercel.app,http://localhost:5173"
+    cors_origins: str = "http://localhost:5173"
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v: Any) -> list[str]:
-        if isinstance(v, list):
-            return v
-        if isinstance(v, str):
-            v = v.strip()
-            if v.startswith("["):
-                import json
-                return json.loads(v)
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 
 settings = Settings()
