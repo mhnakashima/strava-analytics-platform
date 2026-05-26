@@ -1,23 +1,55 @@
 """
 Carrega DataFrames transformados no PostgreSQL via upsert.
 """
+from __future__ import annotations
+
+import math
 from datetime import datetime
 
 import pandas as pd
 from loguru import logger
 from sqlalchemy import create_engine, text
-from sqlalchemy.dialects.postgresql import insert
 
 from config import DATABASE_URL
 
 _ssl_args = {"sslmode": "require"} if any(h in (DATABASE_URL or "") for h in ("neon.tech", "supabase")) else {}
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=_ssl_args)
 
+_STMT = text("""
+    INSERT INTO fact_activities (
+        activity_id, athlete_id, date_id, strava_name, start_date,
+        distance_meters, moving_time_sec, elapsed_time_sec, elevation_gain_m,
+        avg_pace_sec_km, avg_heartrate, max_heartrate, calories, training_load,
+        kudos_count, updated_at
+    )
+    VALUES (
+        :activity_id, :athlete_id, :date_id, :strava_name, :start_date,
+        :distance_meters, :moving_time_sec, :elapsed_time_sec, :elevation_gain_m,
+        :avg_pace_sec_km, :avg_heartrate, :max_heartrate, :calories, :training_load,
+        :kudos_count, :updated_at
+    )
+    ON CONFLICT (activity_id) DO UPDATE SET
+        strava_name = EXCLUDED.strava_name,
+        kudos_count = EXCLUDED.kudos_count,
+        calories = EXCLUDED.calories,
+        updated_at = EXCLUDED.updated_at
+""")
+
+
+def _sanitize(val: object) -> object:
+    """Replace NaN/Inf with None so psycopg2 can bind them as NULL."""
+    if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
+        return None
+    return val
+
+
+def _to_clean_records(df: pd.DataFrame) -> list[dict]:
+    raw = df.to_dict("records")
+    return [{k: _sanitize(v) for k, v in row.items()} for row in raw]
+
 
 def upsert_activities(df: pd.DataFrame, athlete_id: int) -> int:
-    """
-    Upsert em fact_activities. Retorna número de linhas inseridas/atualizadas.
-    """
+    """Upsert em fact_activities. Retorna número de linhas inseridas."""
     if df.empty:
         return 0
 
@@ -26,47 +58,40 @@ def upsert_activities(df: pd.DataFrame, athlete_id: int) -> int:
         "distance_meters", "moving_time_sec", "elapsed_time_sec",
         "elevation_gain_m", "avg_pace_sec_km", "best_pace_sec_km",
         "avg_heartrate", "max_heartrate", "calories", "training_load",
-        "kudos_count", "updated_at",
+        "kudos_count",
     ]
 
     df = df.copy()
     df["athlete_id"] = athlete_id
     df["updated_at"] = datetime.utcnow()
+    columns.append("updated_at")
 
-    # Keep only columns that exist in the DataFrame
     available = [c for c in columns if c in df.columns]
-    records = df[available].where(pd.notna(df[available]), other=None).to_dict("records")
+    records = _to_clean_records(df[available])
 
     inserted = 0
-    with engine.begin() as conn:
-        for batch_start in range(0, len(records), 500):
-            batch = records[batch_start : batch_start + 500]
-            stmt = text("""
-                INSERT INTO fact_activities (activity_id, athlete_id, date_id, strava_name, start_date,
-                    distance_meters, moving_time_sec, elapsed_time_sec, elevation_gain_m,
-                    avg_pace_sec_km, avg_heartrate, max_heartrate, calories, training_load,
-                    kudos_count, updated_at)
-                VALUES (:activity_id, :athlete_id, :date_id, :strava_name, :start_date,
-                    :distance_meters, :moving_time_sec, :elapsed_time_sec, :elevation_gain_m,
-                    :avg_pace_sec_km, :avg_heartrate, :max_heartrate, :calories, :training_load,
-                    :kudos_count, :updated_at)
-                ON CONFLICT (activity_id) DO UPDATE SET
-                    strava_name = EXCLUDED.strava_name,
-                    kudos_count = EXCLUDED.kudos_count,
-                    calories = EXCLUDED.calories,
-                    updated_at = EXCLUDED.updated_at
-            """)
-            for record in batch:
-                record.setdefault("date_id", None)
-                record.setdefault("strava_name", None)
-                record.setdefault("best_pace_sec_km", None)
-                record.setdefault("updated_at", datetime.utcnow())
-                try:
-                    conn.execute(stmt, record)
-                    inserted += 1
-                except Exception as exc:
-                    logger.warning(f"Failed to upsert activity {record.get('activity_id')}: {exc}")
+    skipped = 0
 
+    # Use savepoints so one bad row doesn't abort the whole transaction.
+    with engine.connect() as conn:
+        for record in records:
+            record.setdefault("date_id", None)
+            record.setdefault("strava_name", None)
+            record.setdefault("best_pace_sec_km", None)
+            sp = conn.begin_nested()
+            try:
+                conn.execute(_STMT, record)
+                sp.commit()
+                inserted += 1
+            except Exception as exc:
+                sp.rollback()
+                skipped += 1
+                if skipped <= 5:  # log only first few to avoid noise
+                    logger.warning(f"Skipped activity {record.get('activity_id')}: {exc!r}")
+        conn.commit()
+
+    if skipped:
+        logger.warning(f"Skipped {skipped} activities due to errors")
     logger.info(f"Upserted {inserted} activities for athlete {athlete_id}")
     return inserted
 

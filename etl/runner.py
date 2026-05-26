@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Executa o pipeline ETL completo para todos os atletas com tokens válidos.
 """

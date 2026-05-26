@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Transformações e cálculo de métricas derivadas.
 """
