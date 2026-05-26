@@ -62,7 +62,17 @@ def get_summary(
     repo = ActivityRepository(db)
     kpis = repo.get_kpis(athlete_id, start_date, end_date)
     if not kpis:
-        raise HTTPException(status_code=404, detail="No activities found")
+        return ActivityKPIs(
+            total_distance_km=0,
+            total_activities=0,
+            avg_pace_sec_km=None,
+            best_pace_sec_km=None,
+            avg_heartrate=None,
+            total_elevation_m=0,
+            total_calories=0,
+            consistency_per_week=0,
+            avg_training_load=None,
+        )
     return ActivityKPIs(**kpis)
 
 
