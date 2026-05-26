@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # Set as comma-separated: "https://app.vercel.app,http://localhost:5173"
     cors_origins: str = "http://localhost:5173"
 
+    # Frontend URL — callback redirects here after OAuth
+    frontend_url: str = "http://localhost:5173"
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

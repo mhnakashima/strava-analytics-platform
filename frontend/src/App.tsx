@@ -1,5 +1,6 @@
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import MLDashboard from './pages/ml/MLDashboard';
 import OperationalDashboard from './pages/operational/OperationalDashboard';
@@ -53,11 +54,16 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function LoginPage() {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+  const error = new URLSearchParams(window.location.search).get('error');
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="text-center space-y-6">
         <h1 className="text-4xl font-bold text-white">Strava Analytics</h1>
         <p className="text-gray-400">Plataforma de Analytics para Performance Esportiva</p>
+        {error && (
+          <p className="text-red-400 text-sm">Erro ao autenticar: {error}. Tente novamente.</p>
+        )}
         <a
           href={`${apiUrl}/auth/strava`}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
@@ -66,6 +72,40 @@ function LoginPage() {
           Conectar com Strava
         </a>
       </div>
+    </div>
+  );
+}
+
+// Reads the JWT from the URL fragment after the OAuth redirect and stores it.
+// The backend redirects to: /#token=xxx&athlete_id=1&firstname=John&lastname=Doe
+function OAuthCallback() {
+  const { login } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    const params = new URLSearchParams(hash);
+    const token = params.get('token');
+    const athleteId = params.get('athlete_id');
+    const firstname = params.get('firstname') ?? '';
+    const lastname = params.get('lastname') ?? '';
+
+    if (token && athleteId) {
+      login({ access_token: token, athlete_id: Number(athleteId), firstname, lastname });
+      navigate('/strategic', { replace: true });
+    } else {
+      navigate('/?error=missing_token', { replace: true });
+    }
+  }, [login, navigate]);
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white text-lg">
+      Autenticando…
     </div>
   );
 }
@@ -82,6 +122,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginPage />} />
+          <Route path="/callback" element={<OAuthCallback />} />
           <Route path="/strategic" element={<ProtectedRoute><StrategicDashboard /></ProtectedRoute>} />
           <Route path="/tactical" element={<ProtectedRoute><TacticalDashboard /></ProtectedRoute>} />
           <Route path="/operational" element={<ProtectedRoute><OperationalDashboard /></ProtectedRoute>} />
