@@ -1,9 +1,10 @@
+import { useShallow } from 'zustand/react/shallow';
 import { HRZonesPieChart } from '../../components/charts/HRZonesPieChart';
 import { useHRZones } from '../../hooks/useActivities';
 import { useFiltersStore } from '../../store/useFiltersStore';
 
 export default function TacticalDashboard() {
-  const params = useFiltersStore((s) => s.toQueryParams());
+  const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
   const { data: hrZones, isLoading } = useHRZones(params);
 
   return (

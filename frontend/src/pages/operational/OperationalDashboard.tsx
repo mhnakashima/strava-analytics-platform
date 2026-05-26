@@ -1,9 +1,10 @@
+import { useShallow } from 'zustand/react/shallow';
 import { clusterColor, formatDistance, formatDuration, formatPace } from '../../lib/utils';
 import { useActivities } from '../../hooks/useActivities';
 import { useFiltersStore } from '../../store/useFiltersStore';
 
 export default function OperationalDashboard() {
-  const params = useFiltersStore((s) => s.toQueryParams());
+  const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
   const { data: activities, isLoading } = useActivities({ ...params, limit: 50 });
 
   return (

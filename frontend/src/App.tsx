@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
+import { useBackendHealth } from './hooks/useBackendHealth';
 import MLDashboard from './pages/ml/MLDashboard';
 import OperationalDashboard from './pages/operational/OperationalDashboard';
 import StrategicDashboard from './pages/strategic/StrategicDashboard';
@@ -13,6 +14,7 @@ const queryClient = new QueryClient({
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { firstname, lastname, logout } = useAuthStore();
+  const health = useBackendHealth();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
@@ -47,7 +49,20 @@ function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 p-6 overflow-auto">{children}</main>
+      <main className="flex-1 flex flex-col overflow-auto">
+        {health === 'checking' && (
+          <div className="bg-yellow-900/60 text-yellow-300 text-xs px-4 py-2 flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+            Conectando ao servidor… pode levar até 30s (Render free tier)
+          </div>
+        )}
+        {health === 'unreachable' && (
+          <div className="bg-red-900/60 text-red-300 text-xs px-4 py-2">
+            Servidor indisponível. Tente recarregar a página.
+          </div>
+        )}
+        <div className="flex-1 p-6">{children}</div>
+      </main>
     </div>
   );
 }

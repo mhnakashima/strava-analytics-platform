@@ -1,10 +1,11 @@
+import { useShallow } from 'zustand/react/shallow';
 import { PaceProgressionChart } from '../../components/charts/PaceProgressionChart';
 import { KPIStrip } from '../../components/ui/KPIStrip';
 import { useActivityKPIs, useTimeline } from '../../hooks/useActivities';
 import { useFiltersStore } from '../../store/useFiltersStore';
 
 export default function StrategicDashboard() {
-  const params = useFiltersStore((s) => s.toQueryParams());
+  const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
   const { data: kpis, isLoading: loadingKPIs } = useActivityKPIs(params);
   const { data: timeline, isLoading: loadingTimeline } = useTimeline(params);
 
