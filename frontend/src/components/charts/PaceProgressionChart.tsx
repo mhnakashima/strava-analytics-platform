@@ -31,7 +31,7 @@ export function PaceProgressionChart({ data }: Props) {
           domain={['dataMin - 10', 'dataMax + 10']}
         />
         <Tooltip
-          formatter={(v: number) => [formatPace(v), 'Pace']}
+          formatter={(v) => [formatPace(Number(v)), 'Pace']}
           labelStyle={{ color: '#f3f4f6' }}
           contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 6 }}
         />

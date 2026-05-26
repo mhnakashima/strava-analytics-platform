@@ -31,9 +31,10 @@ export function TrainingClustersScatter({ data }: Props) {
         <Tooltip
           cursor={{ strokeDasharray: '3 3' }}
           contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 6 }}
-          formatter={(value: number, name: string) => {
-            if (name === 'Pace') return [formatPace(value), name];
-            return [`${value}`, name];
+          formatter={(value, name) => {
+            const n = Number(value);
+            if (name === 'Pace') return [formatPace(n), name as string];
+            return [`${n}`, name as string];
           }}
         />
         {CLUSTERS.map((cluster) => (

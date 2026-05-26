@@ -20,13 +20,22 @@ export function HRZonesPieChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <PieChart>
-        <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, value }) => `${value.toFixed(1)}%`} labelLine={false}>
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={90}
+          label={({ value }) => `${(value as number).toFixed(1)}%`}
+          labelLine={false}
+        >
           {chartData.map((_, i) => (
             <Cell key={i} fill={ZONE_COLORS[i % ZONE_COLORS.length]} />
           ))}
         </Pie>
         <Tooltip
-          formatter={(v: number) => [`${v.toFixed(1)}%`]}
+          formatter={(v) => [`${(Number(v)).toFixed(1)}%`]}
           contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 6 }}
         />
         <Legend wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
