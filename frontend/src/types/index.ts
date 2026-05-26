@@ -2,6 +2,7 @@ export interface Activity {
   activity_id: number;
   strava_name: string | null;
   start_date: string | null;
+  activity_type: string | null;
   distance_km: number | null;
   moving_time_sec: number | null;
   avg_pace_sec_km: number | null;

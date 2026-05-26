@@ -84,10 +84,31 @@ def run_for_athlete(athlete: dict) -> None:
 
         rows_inserted = upsert_activities(df, athlete_id)
 
-        if len(df) >= 10:
-            cluster_labels = infer(df)
-            df["cluster_label"] = cluster_labels
-            update_cluster_labels(df[["activity_id", "cluster_label"]])
+        # Load ALL running activities from DB for full-history train + label
+        with engine.connect() as conn:
+            all_rows = conn.execute(
+                text("""
+                    SELECT activity_id, avg_pace_sec_km, distance_meters,
+                           avg_heartrate, elevation_gain_m, moving_time_sec, training_load
+                    FROM fact_activities
+                    WHERE athlete_id = :aid
+                      AND activity_type IN ('Run','TrailRun','VirtualRun')
+                      AND avg_pace_sec_km IS NOT NULL
+                """),
+                {"aid": athlete_id},
+            ).fetchall()
+
+        if all_rows:
+            import pandas as _pd
+            all_df = _pd.DataFrame([dict(r._mapping) for r in all_rows])
+            all_df["distance_km"] = all_df["distance_meters"] / 1000
+
+            if len(all_df) >= 10:
+                trained_pipeline = train(all_df)
+                if trained_pipeline:
+                    cluster_labels = infer(all_df)
+                    all_df["cluster_label"] = cluster_labels
+                    update_cluster_labels(all_df[["activity_id", "cluster_label"]])
 
         duration = time.time() - start
         log_etl_run(athlete_id, rows_inserted, errors, duration, "success")

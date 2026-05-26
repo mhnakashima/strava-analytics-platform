@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -13,14 +14,15 @@ class ActivityRepository:
     def list(
         self,
         athlete_id: int,
-        start_date: str | None = None,
-        end_date: str | None = None,
-        activity_type: str | None = None,
-        intensity: str | None = None,
-        min_distance_km: float | None = None,
-        max_distance_km: float | None = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        activity_type: Optional[str] = None,
+        intensity: Optional[str] = None,
+        min_distance_km: Optional[float] = None,
+        max_distance_km: Optional[float] = None,
         limit: int = 20,
-        cursor: int | None = None,
+        offset: int = 0,
+        cursor: Optional[int] = None,
     ) -> list[FactActivity]:
         q = self.db.query(FactActivity).filter(FactActivity.athlete_id == athlete_id)
 
@@ -37,7 +39,7 @@ class ActivityRepository:
         if cursor:
             q = q.filter(FactActivity.activity_id < cursor)
 
-        return q.order_by(FactActivity.start_date.desc()).limit(limit).all()
+        return q.order_by(FactActivity.start_date.desc()).offset(offset).limit(limit).all()
 
     def get_by_id(self, activity_id: int, athlete_id: int) -> FactActivity | None:
         return self.db.query(FactActivity).filter(
@@ -45,7 +47,7 @@ class ActivityRepository:
             FactActivity.athlete_id == athlete_id,
         ).first()
 
-    def get_kpis(self, athlete_id: int, start_date: str | None = None, end_date: str | None = None) -> dict:
+    def get_kpis(self, athlete_id: int, start_date: Optional[str] = None, end_date: Optional[str] = None) -> dict:
         q = self.db.query(FactActivity).filter(FactActivity.athlete_id == athlete_id)
         if start_date:
             q = q.filter(FactActivity.start_date >= start_date)
@@ -72,7 +74,7 @@ class ActivityRepository:
             "avg_training_load": round(sum(r.training_load for r in rows if r.training_load) / max(len([r for r in rows if r.training_load]), 1), 1),
         }
 
-    def get_timeline(self, athlete_id: int, start_date: str | None = None, end_date: str | None = None) -> list[dict]:
+    def get_timeline(self, athlete_id: int, start_date: Optional[str] = None, end_date: Optional[str] = None) -> list[dict]:
         q = self.db.query(FactActivity).filter(FactActivity.athlete_id == athlete_id)
         if start_date:
             q = q.filter(FactActivity.start_date >= start_date)

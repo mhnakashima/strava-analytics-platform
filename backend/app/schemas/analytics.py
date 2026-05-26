@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -22,27 +23,27 @@ class TrendPoint(BaseModel):
     period: str
     distance_km: float
     activities: int
-    avg_pace_sec_km: float | None
-    avg_heartrate: float | None
+    avg_pace_sec_km: Optional[float]
+    avg_heartrate: Optional[float]
 
 
 class ComparisonReport(BaseModel):
     current_distance_km: float
     previous_distance_km: float
     distance_delta_pct: float
-    current_avg_pace: float | None
-    previous_avg_pace: float | None
-    pace_delta_pct: float | None
+    current_avg_pace: Optional[float]
+    previous_avg_pace: Optional[float]
+    pace_delta_pct: Optional[float]
 
 
 class ClusterPoint(BaseModel):
     activity_id: int
-    start_date: str | None
-    avg_pace_sec_km: float | None
-    distance_km: float | None
-    avg_heartrate: float | None
-    elevation_gain_m: float | None
-    cluster_label: str | None
+    start_date: Optional[str]
+    avg_pace_sec_km: Optional[float]
+    distance_km: Optional[float]
+    avg_heartrate: Optional[float]
+    elevation_gain_m: Optional[float]
+    cluster_label: Optional[str]
 
 
 class TrainingProfile(BaseModel):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -21,8 +22,8 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 @router.get("/trends", response_model=list[TrendPoint], summary="Tendências semanais/mensais")
 def get_trends(
     granularity: str = "month",
-    start_date: str | None = None,
-    end_date: str | None = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):
@@ -33,37 +34,73 @@ def get_trends(
 
 @router.get("/heartrate", response_model=HRZoneDistribution, summary="Distribuição de zonas cardíacas")
 def get_hr_zones(
-    start_date: str | None = None,
-    end_date: str | None = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):
+    from app.models.dim_athlete import DimAthlete
     from app.models.fact_activity import FactActivity
 
-    q = db.query(FactActivity).filter(FactActivity.athlete_id == athlete_id)
+    athlete = db.query(DimAthlete).filter(DimAthlete.athlete_id == athlete_id).first()
+    max_hr = (athlete.max_heartrate if athlete and athlete.max_heartrate else None) or 180
+
+    q = db.query(FactActivity).filter(
+        FactActivity.athlete_id == athlete_id,
+        FactActivity.avg_heartrate.isnot(None),
+    )
     if start_date:
         q = q.filter(FactActivity.start_date >= start_date)
     if end_date:
         q = q.filter(FactActivity.start_date <= end_date)
     rows = q.all()
 
-    def avg_zone(attr: str) -> float:
-        vals = [getattr(r, attr) for r in rows if getattr(r, attr) is not None]
-        return round(sum(vals) / max(len(vals), 1), 1)
+    # If we have per-activity zone columns, use them
+    has_zone_data = any(r.hr_zone_1_pct is not None for r in rows)
+    if has_zone_data:
+        def avg_zone(attr: str) -> float:
+            vals = [getattr(r, attr) for r in rows if getattr(r, attr) is not None]
+            return round(sum(vals) / max(len(vals), 1), 1)
+        return HRZoneDistribution(
+            zone_1_pct=avg_zone("hr_zone_1_pct"),
+            zone_2_pct=avg_zone("hr_zone_2_pct"),
+            zone_3_pct=avg_zone("hr_zone_3_pct"),
+            zone_4_pct=avg_zone("hr_zone_4_pct"),
+            zone_5_pct=avg_zone("hr_zone_5_pct"),
+        )
+
+    # Fallback: classify each activity by its avg_heartrate relative to max HR
+    total = max(len(rows), 1)
+    counts = [0, 0, 0, 0, 0]
+    thresholds = [0.60, 0.70, 0.80, 0.90]
+    limits = [t * max_hr for t in thresholds]
+
+    for r in rows:
+        hr = r.avg_heartrate
+        if hr < limits[0]:
+            counts[0] += 1
+        elif hr < limits[1]:
+            counts[1] += 1
+        elif hr < limits[2]:
+            counts[2] += 1
+        elif hr < limits[3]:
+            counts[3] += 1
+        else:
+            counts[4] += 1
 
     return HRZoneDistribution(
-        zone_1_pct=avg_zone("hr_zone_1_pct"),
-        zone_2_pct=avg_zone("hr_zone_2_pct"),
-        zone_3_pct=avg_zone("hr_zone_3_pct"),
-        zone_4_pct=avg_zone("hr_zone_4_pct"),
-        zone_5_pct=avg_zone("hr_zone_5_pct"),
+        zone_1_pct=round(counts[0] / total * 100, 1),
+        zone_2_pct=round(counts[1] / total * 100, 1),
+        zone_3_pct=round(counts[2] / total * 100, 1),
+        zone_4_pct=round(counts[3] / total * 100, 1),
+        zone_5_pct=round(counts[4] / total * 100, 1),
     )
 
 
 @router.get("/consistency", response_model=ConsistencyReport, summary="Score de consistência")
 def get_consistency(
-    start_date: str | None = None,
-    end_date: str | None = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):

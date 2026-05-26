@@ -7,8 +7,9 @@ interface Props {
 }
 
 export function PaceProgressionChart({ data }: Props) {
+  // Filter out non-running activities (pace > 30 min/km = 1800 sec/km are yoga, cycling, etc.)
   const chartData = data
-    .filter((p) => p.avg_pace_sec_km)
+    .filter((p) => p.avg_pace_sec_km && p.avg_pace_sec_km > 0 && p.avg_pace_sec_km <= 1800)
     .map((p) => ({
       date: p.date,
       pace: p.avg_pace_sec_km,

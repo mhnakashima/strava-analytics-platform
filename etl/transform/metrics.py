@@ -10,11 +10,24 @@ import pandas as pd
 from loguru import logger
 
 
-def calc_pace(distance_meters: float | None, moving_time_sec: int | None) -> float | None:
-    """Retorna pace em segundos/km."""
+# Activity types where pace (time/distance) is a meaningful metric
+PACE_ACTIVITY_TYPES = {"Run", "TrailRun", "Walk", "Hike", "VirtualRun", "RaceWalk"}
+
+# Activity types where KMeans intensity clustering makes sense
+CLUSTER_ACTIVITY_TYPES = {"Run", "TrailRun", "VirtualRun"}
+
+
+def calc_pace(distance_meters: float | None, moving_time_sec: int | None, activity_type: str = "Run") -> float | None:
+    """Retorna pace em segundos/km — apenas para atividades com pace relevante."""
+    if activity_type not in PACE_ACTIVITY_TYPES:
+        return None
     if not distance_meters or not moving_time_sec or distance_meters <= 0:
         return None
-    return round(moving_time_sec / (distance_meters / 1000), 2)
+    pace = moving_time_sec / (distance_meters / 1000)
+    # Sanity cap: > 30 min/km means GPS error or near-zero distance
+    if pace > 1800:
+        return None
+    return round(pace, 2)
 
 
 def calc_trimp(duration_min: float, avg_hr: float, max_hr: float, resting_hr: float = 55) -> float | None:
@@ -75,7 +88,8 @@ def transform_activities(raw: list[dict], athlete_max_hr: int = 180) -> pd.DataF
             max_hr = act.get("max_heartrate")
             start_date_str = act.get("start_date_local") or act.get("start_date")
 
-            pace = calc_pace(distance_m, moving_time)
+            activity_type = act.get("type") or act.get("sport_type") or "Run"
+            pace = calc_pace(distance_m, moving_time, activity_type)
             duration_min = moving_time / 60 if moving_time else 0
             trimp = calc_trimp(duration_min, avg_hr or 0, athlete_max_hr) if avg_hr else None
 
@@ -94,7 +108,7 @@ def transform_activities(raw: list[dict], athlete_max_hr: int = 180) -> pd.DataF
                 "calories": act.get("calories"),
                 "kudos_count": act.get("kudos_count", 0),
                 "training_load": trimp,
-                "activity_type": act.get("type", "Run"),
+                "activity_type": activity_type,
             })
         except Exception as exc:
             logger.warning(f"Skipping activity {act.get('id')}: {exc}")

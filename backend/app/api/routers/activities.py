@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -13,14 +14,15 @@ router = APIRouter(prefix="/activities", tags=["Activities"])
 
 @router.get("", response_model=list[ActivitySummary], summary="Lista atividades com filtros")
 def list_activities(
-    start_date: str | None = None,
-    end_date: str | None = None,
-    activity_type: str | None = None,
-    intensity: str | None = None,
-    min_distance_km: float | None = None,
-    max_distance_km: float | None = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    activity_type: Optional[str] = None,
+    intensity: Optional[str] = None,
+    min_distance_km: Optional[float] = None,
+    max_distance_km: Optional[float] = None,
     limit: int = 20,
-    cursor: int | None = None,
+    offset: int = 0,
+    cursor: Optional[int] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):
@@ -34,6 +36,7 @@ def list_activities(
         min_distance_km=min_distance_km,
         max_distance_km=max_distance_km,
         limit=limit,
+        offset=offset,
         cursor=cursor,
     )
     return [
@@ -41,6 +44,7 @@ def list_activities(
             activity_id=r.activity_id,
             strava_name=r.strava_name,
             start_date=r.start_date,
+            activity_type=r.activity_type,
             distance_km=round((r.distance_meters or 0) / 1000, 2),
             moving_time_sec=r.moving_time_sec,
             avg_pace_sec_km=r.avg_pace_sec_km,
@@ -54,8 +58,8 @@ def list_activities(
 
 @router.get("/summary", response_model=ActivityKPIs, summary="KPIs agregados do período")
 def get_summary(
-    start_date: str | None = None,
-    end_date: str | None = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):
@@ -78,8 +82,8 @@ def get_summary(
 
 @router.get("/timeline", response_model=list[TimelinePoint], summary="Série temporal de atividades")
 def get_timeline(
-    start_date: str | None = None,
-    end_date: str | None = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):

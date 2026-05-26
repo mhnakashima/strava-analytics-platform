@@ -61,7 +61,7 @@ def strava_callback(code: str, db: Session = Depends(get_db)):
         f"&firstname={athlete.firstname or ''}"
         f"&lastname={athlete.lastname or ''}"
     )
-    return RedirectResponse(url=redirect_url)
+    return RedirectResponse(url=redirect_url, status_code=302)
 
 
 @router.post("/refresh", response_model=TokenResponse, summary="Renova access token JWT")

@@ -44,13 +44,16 @@ export default function MLDashboard() {
         </h2>
         <p className="text-xs text-gray-500 mb-4">
           Verde = leve &nbsp;·&nbsp; Âmbar = moderado &nbsp;·&nbsp; Vermelho = intenso
+          &nbsp;·&nbsp; Apenas corridas (Run / TrailRun)
         </p>
         {isLoading ? (
           <div className="h-72 bg-gray-700 animate-pulse rounded" />
-        ) : clusters ? (
+        ) : clusters && clusters.length > 0 ? (
           <TrainingClustersScatter data={clusters} />
         ) : (
-          <p className="text-gray-500 text-sm">Sem dados de cluster. Execute o ETL primeiro.</p>
+          <p className="text-gray-500 text-sm">
+            Sem dados de cluster. Apenas corridas são agrupadas — execute o ETL para atualizar.
+          </p>
         )}
       </div>
     </div>

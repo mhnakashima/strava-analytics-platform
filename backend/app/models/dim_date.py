@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from datetime import date
 
@@ -19,4 +20,4 @@ class DimDate(Base):
     week_of_year: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     day_of_week: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     is_weekend: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    season: Mapped[str | None] = mapped_column(String(20))
+    season: Mapped[Optional[str]] = mapped_column(String(20))

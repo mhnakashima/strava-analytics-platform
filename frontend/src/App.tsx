@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import { useBackendHealth } from './hooks/useBackendHealth';
 import MLDashboard from './pages/ml/MLDashboard';
@@ -96,10 +96,17 @@ function LoginPage() {
 function OAuthCallback() {
   const { login } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
+    // React Router's location.hash is the authoritative source inside BrowserRouter
+    const rawHash = location.hash || window.location.hash;
+    const hash = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+
+    console.debug('[OAuthCallback] hash:', hash || '(empty)');
+
     if (!hash) {
+      console.warn('[OAuthCallback] No hash found, redirecting to /');
       navigate('/', { replace: true });
       return;
     }
@@ -110,13 +117,17 @@ function OAuthCallback() {
     const firstname = params.get('firstname') ?? '';
     const lastname = params.get('lastname') ?? '';
 
+    console.debug('[OAuthCallback] token:', token ? `${token.slice(0, 20)}…` : 'null');
+    console.debug('[OAuthCallback] athleteId:', athleteId);
+
     if (token && athleteId) {
       login({ access_token: token, athlete_id: Number(athleteId), firstname, lastname });
       navigate('/strategic', { replace: true });
     } else {
+      console.error('[OAuthCallback] Missing token or athleteId in hash');
       navigate('/?error=missing_token', { replace: true });
     }
-  }, [login, navigate]);
+  }, [location.hash, login, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white text-lg">
