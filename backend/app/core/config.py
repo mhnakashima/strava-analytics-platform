@@ -1,0 +1,27 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    # Database
+    database_url: str = "postgresql://postgres:postgres@localhost:5432/strava_analytics"
+
+    # Strava OAuth
+    strava_client_id: str = ""
+    strava_client_secret: str = ""
+    strava_redirect_uri: str = "http://localhost:8000/auth/callback"
+    strava_auth_url: str = "https://www.strava.com/oauth/authorize"
+    strava_token_url: str = "https://www.strava.com/oauth/token"
+    strava_api_base: str = "https://www.strava.com/api/v3"
+
+    # JWT
+    jwt_secret: str = "change-this-secret"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 1440
+
+    # CORS
+    cors_origins: list[str] = ["http://localhost:5173"]
+
+
+settings = Settings()
