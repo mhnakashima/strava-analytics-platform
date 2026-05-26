@@ -32,6 +32,8 @@ class ActivityRepository:
             q = q.filter(FactActivity.start_date <= end_date)
         if intensity:
             q = q.filter(FactActivity.cluster_label == intensity)
+        if activity_type:
+            q = q.filter(FactActivity.activity_type == activity_type)
         if min_distance_km:
             q = q.filter(FactActivity.distance_meters >= min_distance_km * 1000)
         if max_distance_km:
@@ -74,12 +76,20 @@ class ActivityRepository:
             "avg_training_load": round(sum(r.training_load for r in rows if r.training_load) / max(len([r for r in rows if r.training_load]), 1), 1),
         }
 
-    def get_timeline(self, athlete_id: int, start_date: Optional[str] = None, end_date: Optional[str] = None) -> list[dict]:
+    def get_timeline(
+        self,
+        athlete_id: int,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        activity_type: Optional[str] = None,
+    ) -> list[dict]:
         q = self.db.query(FactActivity).filter(FactActivity.athlete_id == athlete_id)
         if start_date:
             q = q.filter(FactActivity.start_date >= start_date)
         if end_date:
             q = q.filter(FactActivity.start_date <= end_date)
+        if activity_type:
+            q = q.filter(FactActivity.activity_type == activity_type)
         rows = q.order_by(FactActivity.start_date).all()
         return [
             {

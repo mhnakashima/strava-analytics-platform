@@ -10,7 +10,7 @@
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
     --border: 240 6% 90%;
-    --accent: 16 100% 50%; /* Strava orange */
+    --accent: 16 100% 50%;
   }
 
   .dark {
@@ -29,4 +29,65 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-gray-900; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-700 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-gray-500; }
 }
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-gray-700/60 bg-gray-800/80 backdrop-blur-sm shadow-lg;
+  }
+
+  .card-header {
+    @apply px-5 py-4 border-b border-gray-700/60 flex items-center justify-between;
+  }
+
+  .card-title {
+    @apply text-xs font-semibold text-gray-400 uppercase tracking-widest;
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-500/40;
+  }
+
+  .btn-primary {
+    @apply btn bg-strava-orange hover:bg-orange-600 text-white;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent hover:bg-gray-700 text-gray-300 hover:text-white;
+  }
+
+  .btn-outline {
+    @apply btn border border-gray-600 hover:border-gray-400 bg-transparent text-gray-300 hover:text-white hover:bg-gray-700;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-all duration-150 border;
+  }
+
+  .pill-active {
+    @apply pill border-strava-orange bg-strava-orange/10 text-strava-orange;
+  }
+
+  .pill-inactive {
+    @apply pill border-gray-600 bg-transparent text-gray-400 hover:border-gray-400 hover:text-gray-200;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-gray-400 hover:text-white hover:bg-gray-800;
+  }
+
+  .nav-link-active {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-gray-800 relative;
+  }
+
+  .input-field {
+    @apply bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors placeholder:text-gray-500;
+  }
+}
+

@@ -84,11 +84,15 @@ def get_summary(
 def get_timeline(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    activity_type: Optional[str] = None,
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
 ):
     repo = ActivityRepository(db)
-    return [TimelinePoint(**p) for p in repo.get_timeline(athlete_id, start_date, end_date)]
+    return [
+        TimelinePoint(**p)
+        for p in repo.get_timeline(athlete_id, start_date, end_date, activity_type)
+    ]
 
 
 @router.get("/{activity_id}", response_model=ActivityDetail, summary="Detalhe de atividade")
