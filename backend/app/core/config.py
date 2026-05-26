@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
 
+    # Server (Railway injects PORT automatically)
+    port: int = 8000
+
     # CORS
     cors_origins: list[str] = ["http://localhost:5173"]
 
