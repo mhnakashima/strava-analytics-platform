@@ -84,11 +84,7 @@ const ChevronLeft = () => (
     <polyline points="15 18 9 12 15 6" />
   </svg>
 );
-const ChevronRight = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
+
 const MenuIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
@@ -118,108 +114,117 @@ function Sidebar({ collapsed, onToggle, onClose, mobile }: SidebarProps) {
   const { firstname, lastname, logout } = useAuthStore();
   const { theme, toggle: toggleTheme } = useThemeStore();
   const initials = `${firstname?.[0] ?? ''}${lastname?.[0] ?? ''}`.toUpperCase();
+  const isCollapsed = collapsed && !mobile;
 
   return (
     <aside
+      style={{ boxShadow: '1px 0 0 0 var(--c-border)' }}
       className={`
-        flex flex-col bg-c-card border-r border-c-border h-full
-        transition-all duration-200 ease-in-out overflow-hidden
-        ${collapsed && !mobile ? 'w-[60px]' : 'w-60'}
+        flex flex-col bg-c-card h-full
+        transition-[width] duration-200 ease-in-out overflow-hidden
+        ${isCollapsed ? 'w-[56px]' : 'w-60'}
       `}
     >
-      {/* Logo + collapse toggle */}
-      <div className={`flex items-center border-b border-c-border shrink-0 ${collapsed && !mobile ? 'px-3 py-4 justify-center' : 'px-4 py-4 gap-3'}`}>
-        <div className="w-7 h-7 rounded-lg bg-strava-orange flex items-center justify-center shrink-0 text-white">
+      {/* Logo row */}
+      <div className={`flex items-center shrink-0 h-14 ${isCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}>
+        {/* Logo — doubles as expand button when collapsed */}
+        <button
+          onClick={isCollapsed ? onToggle : undefined}
+          className={`w-7 h-7 rounded-lg bg-strava-orange flex items-center justify-center shrink-0 text-white
+            ${isCollapsed ? 'cursor-pointer hover:brightness-90 transition-all' : 'cursor-default'}`}
+          title={isCollapsed ? 'Expandir' : undefined}
+          tabIndex={isCollapsed ? 0 : -1}
+        >
           <StravaLogo size={16} />
-        </div>
-        {(!collapsed || mobile) && (
-          <div className="flex-1 min-w-0">
-            <p className="text-c-ink font-bold text-sm leading-tight truncate">Strava Analytics</p>
-            <p className="text-c-ink3 text-[11px] truncate">Performance Platform</p>
-          </div>
-        )}
-        {/* Collapse toggle (desktop only) */}
-        {!mobile && (
-          <button
-            onClick={onToggle}
-            className={`flex items-center justify-center w-6 h-6 rounded-md text-c-ink3 hover:text-c-ink hover:bg-c-subtle transition-all shrink-0 ${collapsed ? 'mx-auto' : ''}`}
-            title={collapsed ? 'Expandir' : 'Recolher'}
-          >
-            {collapsed ? <ChevronRight /> : <ChevronLeft />}
-          </button>
-        )}
-        {/* Close on mobile */}
-        {mobile && onClose && (
-          <button onClick={onClose} className="ml-auto w-7 h-7 flex items-center justify-center rounded-md text-c-ink2 hover:text-c-ink hover:bg-c-subtle transition-all">
-            <CloseIcon />
-          </button>
+        </button>
+
+        {!isCollapsed && (
+          <>
+            <div className="flex-1 min-w-0">
+              <p className="text-c-ink font-bold text-sm leading-tight truncate">Strava Analytics</p>
+              <p className="text-c-ink3 text-[11px] truncate">Performance Platform</p>
+            </div>
+            {/* Collapse button (expanded desktop only) */}
+            {!mobile && (
+              <button
+                onClick={onToggle}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-c-ink3 hover:text-c-ink hover:bg-c-subtle transition-all shrink-0"
+                title="Recolher"
+              >
+                <ChevronLeft />
+              </button>
+            )}
+            {/* Close button on mobile */}
+            {mobile && onClose && (
+              <button
+                onClick={onClose}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-c-ink2 hover:text-c-ink hover:bg-c-subtle transition-all ml-auto"
+              >
+                <CloseIcon />
+              </button>
+            )}
+          </>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-        {(!collapsed || mobile) && (
-          <p className="px-3 mb-2 text-[10px] font-bold text-c-ink3 uppercase tracking-widest">Dashboards</p>
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+        {!isCollapsed && (
+          <p className="px-2 mb-2 text-[10px] font-bold text-c-ink3 uppercase tracking-widest">Dashboards</p>
         )}
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.href}
             to={item.href}
             onClick={mobile ? onClose : undefined}
-            title={collapsed && !mobile ? item.label : undefined}
+            title={isCollapsed ? item.label : undefined}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative group ${
-                isActive
-                  ? 'text-c-ink bg-c-subtle'
-                  : 'text-c-ink2 hover:text-c-ink hover:bg-c-subtle/60'
-              } ${collapsed && !mobile ? 'justify-center' : ''}`
+              `flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all relative group
+              ${isActive ? 'text-c-ink bg-c-subtle' : 'text-c-ink2 hover:text-c-ink hover:bg-c-subtle/60'}
+              ${isCollapsed ? 'justify-center' : ''}`
             }
           >
             {({ isActive }) => (
               <>
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-strava-orange rounded-full" />
+                {isActive && !isCollapsed && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-strava-orange rounded-r-full" />
                 )}
-                <span className={`shrink-0 ${isActive ? 'text-strava-orange' : 'text-c-ink3 group-hover:text-c-ink2 transition-colors'}`}>
+                <span className={`shrink-0 transition-colors ${isActive ? 'text-strava-orange' : 'text-c-ink3 group-hover:text-c-ink2'}`}>
                   {item.icon}
                 </span>
-                {(!collapsed || mobile) && (
-                  <span className="truncate">{item.label}</span>
-                )}
+                {!isCollapsed && <span className="truncate">{item.label}</span>}
               </>
             )}
           </NavLink>
         ))}
       </nav>
 
-      {/* Footer: theme + user */}
-      <div className="px-2 py-3 border-t border-c-border space-y-1 shrink-0">
+      {/* Footer */}
+      <div className="px-2 py-3 space-y-0.5 shrink-0" style={{ borderTop: '1px solid var(--c-border)' }}>
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-c-ink2 hover:text-c-ink hover:bg-c-subtle transition-all ${collapsed && !mobile ? 'justify-center' : ''}`}
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-c-ink2 hover:text-c-ink hover:bg-c-subtle transition-all ${isCollapsed ? 'justify-center' : ''}`}
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-          {(!collapsed || mobile) && (
-            <span className="truncate">{theme === 'dark' ? 'Modo claro' : 'Modo escuro'}</span>
-          )}
+          {!isCollapsed && <span className="truncate">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>}
         </button>
 
         {/* User */}
-        <div className={`flex items-center gap-3 px-3 py-2 ${collapsed && !mobile ? 'justify-center' : ''}`}>
+        <div className={`flex items-center gap-3 px-2 py-2 ${isCollapsed ? 'justify-center' : ''}`}>
           <div
-            className="w-7 h-7 rounded-full bg-strava-orange/15 border border-strava-orange/30 flex items-center justify-center shrink-0 cursor-pointer"
+            className="w-7 h-7 rounded-full bg-strava-orange/15 border border-strava-orange/30 flex items-center justify-center shrink-0 cursor-pointer hover:bg-strava-orange/25 transition-colors"
             onClick={logout}
-            title="Sair"
+            title="Sign out"
           >
             <span className="text-[10px] font-bold text-strava-orange">{initials || '?'}</span>
           </div>
-          {(!collapsed || mobile) && (
+          {!isCollapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-c-ink truncate">{firstname} {lastname}</p>
               <button onClick={logout} className="text-[10px] text-c-ink3 hover:text-c-ink2 transition-colors">
-                Sair
+                Sign out
               </button>
             </div>
           )}
