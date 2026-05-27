@@ -48,8 +48,8 @@ export default function TacticalDashboard() {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-white">Dashboard Tático</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Carga de treino, zonas cardíacas e volume semanal</p>
+        <h1 className="text-xl font-bold text-c-ink">Dashboard Tático</h1>
+        <p className="text-sm text-c-ink3 mt-0.5">Carga de treino, zonas cardíacas e volume semanal</p>
       </div>
 
       {/* Top row */}
@@ -58,11 +58,11 @@ export default function TacticalDashboard() {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title">Distribuição de Zonas Cardíacas</h2>
-            <span className="text-xs text-gray-600">% do tempo por zona</span>
+            <span className="text-xs text-c-ink3">% do tempo por zona</span>
           </div>
           <div className="p-5">
             {loadingHR ? (
-              <div className="h-56 bg-gray-700 animate-pulse rounded-lg" />
+              <div className="h-56 bg-c-subtle animate-pulse rounded-lg" />
             ) : hrZones ? (
               <div className="flex gap-6 items-center">
                 {/* Donut */}
@@ -85,7 +85,8 @@ export default function TacticalDashboard() {
                       </Pie>
                       <Tooltip
                         formatter={(v) => [`${(Number(v)).toFixed(1)}%`]}
-                        contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8, fontSize: 12 }}
+                        contentStyle={{ background: 'var(--c-tooltip)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
+                        labelStyle={{ color: 'var(--c-ink)' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -95,14 +96,14 @@ export default function TacticalDashboard() {
                   {hrRingData.map((z) => (
                     <div key={z.name} className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: z.fill }} />
-                      <span className="text-xs text-gray-400 w-5">{z.name}</span>
-                      <span className="text-xs font-semibold text-white">{z.value.toFixed(1)}%</span>
+                      <span className="text-xs text-c-ink2 w-5">{z.name}</span>
+                      <span className="text-xs font-semibold text-c-ink">{z.value.toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500 text-sm py-8 text-center">Sem dados de FC disponíveis</p>
+              <p className="text-c-ink3 text-sm py-8 text-center">Sem dados de FC disponíveis</p>
             )}
           </div>
         </div>
@@ -114,7 +115,7 @@ export default function TacticalDashboard() {
           </div>
           <div className="p-5">
             {loadingHR ? (
-              <div className="h-56 bg-gray-700 animate-pulse rounded-lg" />
+              <div className="h-56 bg-c-subtle animate-pulse rounded-lg" />
             ) : hrZones ? (
               <div className="space-y-3 pt-2">
                 {[
@@ -126,10 +127,10 @@ export default function TacticalDashboard() {
                 ].map((z) => (
                   <div key={z.label} className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-400">{z.label}</span>
-                      <span className="font-semibold text-white">{z.pct.toFixed(1)}%</span>
+                      <span className="text-c-ink2">{z.label}</span>
+                      <span className="font-semibold text-c-ink">{z.pct.toFixed(1)}%</span>
                     </div>
-                    <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-c-subtle rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{ width: `${Math.min(100, z.pct)}%`, background: z.color }}
@@ -139,7 +140,7 @@ export default function TacticalDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm py-8 text-center">Sem dados disponíveis</p>
+              <p className="text-c-ink3 text-sm py-8 text-center">Sem dados disponíveis</p>
             )}
           </div>
         </div>
@@ -149,27 +150,28 @@ export default function TacticalDashboard() {
       <div className="card">
         <div className="card-header">
           <h2 className="card-title">Volume Semanal (km)</h2>
-          <span className="text-xs text-gray-600">Últimas 16 semanas</span>
+          <span className="text-xs text-c-ink3">Últimas 16 semanas</span>
         </div>
         <div className="p-5">
           {loadingTimeline ? (
-            <div className="h-48 bg-gray-700 animate-pulse rounded-lg" />
+            <div className="h-48 bg-c-subtle animate-pulse rounded-lg" />
           ) : weeklyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={weeklyData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-                <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#6b7280' }} />
-                <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickFormatter={(v) => `${v}km`} width={40} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--c-grid)" vertical={false} />
+                <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'var(--c-ink3)' }} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--c-ink3)' }} tickFormatter={(v) => `${v}km`} width={40} />
                 <Tooltip
                   formatter={(v) => [`${(Number(v)).toFixed(1)} km`, 'Volume']}
                   labelFormatter={(l) => `Semana ${l}`}
-                  contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{ background: 'var(--c-tooltip)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: 'var(--c-ink)' }}
                 />
                 <Bar dataKey="km" fill="#FC4C02" opacity={0.85} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-gray-500 text-sm py-8 text-center">Sem dados de volume disponíveis</p>
+            <p className="text-c-ink3 text-sm py-8 text-center">Sem dados de volume disponíveis</p>
           )}
         </div>
       </div>

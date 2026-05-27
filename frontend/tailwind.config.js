@@ -6,15 +6,19 @@ export default {
     extend: {
       colors: {
         strava: { orange: '#FC4C02', dark: '#2D2D2D' },
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        card: 'hsl(var(--card))',
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        border: 'hsl(var(--border))',
-        accent: 'hsl(var(--accent))',
+        // Semantic surface tokens — respond to .dark class via CSS vars
+        'c-page':    'var(--c-page)',
+        'c-card':    'var(--c-card)',
+        'c-raised':  'var(--c-raised)',
+        'c-subtle':  'var(--c-subtle)',
+        'c-border':  'var(--c-border)',
+        'c-ink':     'var(--c-ink)',
+        'c-ink2':    'var(--c-ink2)',
+        'c-ink3':    'var(--c-ink3)',
+      },
+      transitionProperty: {
+        'width': 'width',
+        'sidebar': 'width, transform',
       },
     },
   },

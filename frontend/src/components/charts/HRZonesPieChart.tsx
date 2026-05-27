@@ -1,4 +1,4 @@
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HRZoneDistribution } from '../../types';
 
 const ZONE_COLORS = ['#22c55e', '#84cc16', '#f59e0b', '#f97316', '#ef4444'];
@@ -20,25 +20,15 @@ export function HRZonesPieChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <PieChart>
-        <Pie
-          data={chartData}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={90}
-          label={({ value }) => `${(value as number).toFixed(1)}%`}
-          labelLine={false}
-        >
-          {chartData.map((_, i) => (
-            <Cell key={i} fill={ZONE_COLORS[i % ZONE_COLORS.length]} />
-          ))}
+        <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}
+          label={({ value }) => `${(value as number).toFixed(1)}%`} labelLine={false}>
+          {chartData.map((_, i) => <Cell key={i} fill={ZONE_COLORS[i % ZONE_COLORS.length]} />)}
         </Pie>
         <Tooltip
           formatter={(v) => [`${(Number(v)).toFixed(1)}%`]}
-          contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 6 }}
+          contentStyle={{ background: 'var(--c-tooltip)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
+          labelStyle={{ color: 'var(--c-ink)' }}
         />
-        <Legend wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
       </PieChart>
     </ResponsiveContainer>
   );

@@ -12,13 +12,13 @@ interface KPICardProps {
 
 function KPICard({ label, value, sub, icon, accent = 'text-strava-orange' }: KPICardProps) {
   return (
-    <div className="card p-4 flex flex-col gap-2 hover:border-gray-600 transition-colors">
+    <div className="card p-4 flex flex-col gap-2 hover:border-c-ink3 transition-colors">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest leading-tight">{label}</span>
+        <span className="text-[11px] font-semibold text-c-ink3 uppercase tracking-widest leading-tight">{label}</span>
         <span className={`${accent} opacity-70`}>{icon}</span>
       </div>
-      <span className="text-2xl font-bold text-white leading-none">{value}</span>
-      {sub && <span className="text-xs text-gray-500">{sub}</span>}
+      <span className="text-2xl font-bold text-c-ink leading-none">{value}</span>
+      {sub && <span className="text-xs text-c-ink3">{sub}</span>}
     </div>
   );
 }

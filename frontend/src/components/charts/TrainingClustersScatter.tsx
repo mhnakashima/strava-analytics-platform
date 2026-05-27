@@ -12,25 +12,26 @@ export function TrainingClustersScatter({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--c-grid)" />
         <XAxis
           dataKey="distance_km"
           name="Distância"
           unit=" km"
-          tick={{ fontSize: 11, fill: '#9ca3af' }}
-          label={{ value: 'Distância (km)', position: 'insideBottom', offset: -4, fill: '#9ca3af', fontSize: 11 }}
+          tick={{ fontSize: 11, fill: 'var(--c-ink3)' }}
+          label={{ value: 'Distância (km)', position: 'insideBottom', offset: -4, fill: 'var(--c-ink3)', fontSize: 11 }}
         />
         <YAxis
           dataKey="avg_pace_sec_km"
           name="Pace"
           tickFormatter={(v) => formatPace(v)}
-          tick={{ fontSize: 11, fill: '#9ca3af' }}
+          tick={{ fontSize: 11, fill: 'var(--c-ink3)' }}
           reversed
         />
         <ZAxis range={[40, 40]} />
         <Tooltip
           cursor={{ strokeDasharray: '3 3' }}
-          contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 6 }}
+          contentStyle={{ background: 'var(--c-tooltip)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
+          labelStyle={{ color: 'var(--c-ink)' }}
           formatter={(value, name) => {
             const n = Number(value);
             if (name === 'Pace') return [formatPace(n), name as string];
