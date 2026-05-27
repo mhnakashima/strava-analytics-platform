@@ -33,6 +33,7 @@ class ActivityDetail(ActivitySummary):
     calories: Optional[float]
     training_load: Optional[float]
     kudos_count: int
+    best_pace_sec_km: Optional[float]
     hr_zone_1_pct: Optional[float]
     hr_zone_2_pct: Optional[float]
     hr_zone_3_pct: Optional[float]

@@ -6,6 +6,7 @@ import { useThemeStore } from './store/useThemeStore';
 import { useBackendHealth } from './hooks/useBackendHealth';
 import MLDashboard from './pages/ml/MLDashboard';
 import OperationalDashboard from './pages/operational/OperationalDashboard';
+import ActivityDetailPage from './pages/activity/ActivityDetailPage';
 import StrategicDashboard from './pages/strategic/StrategicDashboard';
 import TacticalDashboard from './pages/tactical/TacticalDashboard';
 
@@ -496,6 +497,7 @@ export default function App() {
           <Route path="/strategic" element={<ProtectedRoute><StrategicDashboard /></ProtectedRoute>} />
           <Route path="/tactical" element={<ProtectedRoute><TacticalDashboard /></ProtectedRoute>} />
           <Route path="/operational" element={<ProtectedRoute><OperationalDashboard /></ProtectedRoute>} />
+          <Route path="/activities/:id" element={<ProtectedRoute><ActivityDetailPage /></ProtectedRoute>} />
           <Route path="/ml" element={<ProtectedRoute><MLDashboard /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
