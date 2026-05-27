@@ -7,7 +7,9 @@ interface Props {
   data: TimelinePoint[];
 }
 
-const RUNNING_PACE_MAX = 1800; // 30 min/km — absolute outlier cap
+// 15 min/km = 900 sec/km. Anything slower is a GPS artifact or a very long walk break.
+// Legitimate marathon/trail runs rarely exceed 12 min/km even for beginners.
+const RUNNING_PACE_MAX = 900;
 
 export function PaceProgressionChart({ data }: Props) {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);

@@ -8,6 +8,8 @@ from app.core.database import get_db
 from app.core.deps import get_current_athlete_id
 from app.repositories.activity_repository import ActivityRepository
 from app.schemas.analytics import (
+    BestEffort,
+    BestTimes,
     ClusterPoint,
     ComparisonReport,
     ConsistencyReport,
@@ -15,6 +17,7 @@ from app.schemas.analytics import (
     TrainingProfile,
     TrendPoint,
 )
+from app.schemas.activity import ActivitySummary
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
@@ -143,6 +146,40 @@ def get_cluster_points(
         )
         for r in rows
     ]
+
+
+@router.get("/best-times", response_model=BestTimes, summary="Melhores tempos em distâncias padrão")
+def get_best_times(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    repo = ActivityRepository(db)
+    efforts = repo.get_best_times(athlete_id)
+    return BestTimes(efforts=[BestEffort(**e) for e in efforts])
+
+
+@router.get("/last-activity", response_model=ActivitySummary, summary="Última atividade registrada")
+def get_last_activity(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    from fastapi import HTTPException
+    repo = ActivityRepository(db)
+    row = repo.get_last_activity(athlete_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="No activities found")
+    return ActivitySummary(
+        activity_id=row.activity_id,
+        strava_name=row.strava_name,
+        start_date=row.start_date,
+        activity_type=row.activity_type,
+        distance_km=round((row.distance_meters or 0) / 1000, 2),
+        moving_time_sec=row.moving_time_sec,
+        avg_pace_sec_km=row.avg_pace_sec_km,
+        avg_heartrate=row.avg_heartrate,
+        elevation_gain_m=row.elevation_gain_m,
+        cluster_label=row.cluster_label,
+    )
 
 
 @router.get("/training-profile", response_model=TrainingProfile, summary="Perfil de intensidade por cluster")

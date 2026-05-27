@@ -70,6 +70,19 @@ export interface TrainingProfile {
   dominant_cluster: string;
 }
 
+export interface BestEffort {
+  label: string;
+  min_distance_km: number;
+  best_pace_sec_km: number | null;
+  best_time_sec: number | null;
+  activity_date: string | null;
+  activity_name: string | null;
+}
+
+export interface BestTimes {
+  efforts: BestEffort[];
+}
+
 export interface Filters {
   startDate: string | null;
   endDate: string | null;

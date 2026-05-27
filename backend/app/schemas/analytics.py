@@ -51,3 +51,16 @@ class TrainingProfile(BaseModel):
     moderado_pct: float
     intenso_pct: float
     dominant_cluster: str
+
+
+class BestEffort(BaseModel):
+    label: str           # "5km", "10km", etc.
+    min_distance_km: float
+    best_pace_sec_km: Optional[float]   # fastest pace in an activity >= that distance
+    best_time_sec: Optional[float]      # best_pace * distance (approx elapsed)
+    activity_date: Optional[str]
+    activity_name: Optional[str]
+
+
+class BestTimes(BaseModel):
+    efforts: list[BestEffort]

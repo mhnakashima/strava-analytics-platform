@@ -41,6 +41,8 @@ export const analyticsApi = {
   consistency: (params?: Record<string, unknown>) => apiClient.get('/analytics/consistency', { params }).then((r) => r.data),
   clusters: () => apiClient.get('/analytics/clusters').then((r) => r.data),
   trainingProfile: () => apiClient.get('/analytics/training-profile').then((r) => r.data),
+  bestTimes: () => apiClient.get('/analytics/best-times').then((r) => r.data),
+  lastActivity: () => apiClient.get('/analytics/last-activity').then((r) => r.data),
 };
 
 // ── ML ────────────────────────────────────────────────────────

@@ -102,6 +102,47 @@ class ActivityRepository:
             for r in rows
         ]
 
+    def get_best_times(self, athlete_id: int) -> list[dict]:
+        """Return the activity with the best (lowest) pace for each standard distance threshold."""
+        thresholds = [
+            ("5km",  5_000),
+            ("10km", 10_000),
+            ("21km", 21_097),
+            ("42km", 42_195),
+        ]
+        results = []
+        running_types = ("Run", "TrailRun", "VirtualRun", "RaceWalk")
+        for label, min_meters in thresholds:
+            best = (
+                self.db.query(FactActivity)
+                .filter(
+                    FactActivity.athlete_id == athlete_id,
+                    FactActivity.distance_meters >= min_meters,
+                    FactActivity.avg_pace_sec_km.isnot(None),
+                    FactActivity.avg_pace_sec_km > 0,
+                    FactActivity.activity_type.in_(running_types),
+                )
+                .order_by(FactActivity.avg_pace_sec_km.asc())
+                .first()
+            )
+            results.append({
+                "label": label,
+                "min_distance_km": min_meters / 1000,
+                "best_pace_sec_km": best.avg_pace_sec_km if best else None,
+                "best_time_sec": (best.avg_pace_sec_km * (min_meters / 1000)) if best and best.avg_pace_sec_km else None,
+                "activity_date": best.start_date.strftime("%Y-%m-%d") if best and best.start_date else None,
+                "activity_name": best.strava_name if best else None,
+            })
+        return results
+
+    def get_last_activity(self, athlete_id: int) -> Optional[FactActivity]:
+        return (
+            self.db.query(FactActivity)
+            .filter(FactActivity.athlete_id == athlete_id)
+            .order_by(FactActivity.start_date.desc())
+            .first()
+        )
+
     def get_cluster_points(self, athlete_id: int) -> list[FactActivity]:
         return self.db.query(FactActivity).filter(
             FactActivity.athlete_id == athlete_id,
