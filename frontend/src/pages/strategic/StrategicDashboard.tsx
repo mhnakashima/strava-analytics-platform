@@ -153,64 +153,69 @@ export default function StrategicDashboard() {
 
       </div>
 
-      {/* Best Times */}
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">{t.strategic.bestTimes}</h2>
-          <span className="text-xs text-c-ink3">{t.common.runOnly}</span>
-        </div>
-        <div className="p-5">
-          {loadingBestTimes ? (
-            <div className="grid grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--c-subtle)' }} />
-              ))}
-            </div>
-          ) : bestTimes ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {bestTimes.efforts.map((e) => (
-                <div
-                  key={e.label}
-                  className={`rounded-xl border bg-gradient-to-br ${DISTANCE_COLORS[e.label] ?? 'from-gray-700/10 to-gray-700/5 border-c-border'} p-4 space-y-1`}
-                >
-                  <p className={`text-xs font-bold uppercase tracking-widest ${DISTANCE_ACCENT[e.label] ?? 'text-c-ink2'}`}>{e.label}</p>
-                  <p className="text-2xl font-bold text-c-ink">{formatTime(e.best_time_sec)}</p>
-                  {e.best_pace_sec_km && (
-                    <p className="text-xs text-c-ink2">{formatPace(e.best_pace_sec_km)} /km</p>
-                  )}
-                  {e.activity_date && (
-                    <p className="text-[10px] text-c-ink3 pt-1">{e.activity_date}</p>
-                  )}
-                  {!e.best_pace_sec_km && (
-                    <p className="text-xs text-c-ink3 italic">{t.common.noData}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-c-ink3 text-sm">{t.strategic.noBestTimes}</p>
-          )}
-        </div>
-      </div>
+      {/* ── Bottom row: Best Times (6) + Pace Chart (6) ───────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
 
-      {/* Pace progression chart */}
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">{t.strategic.paceProgression}</h2>
-          <span className="flex items-center gap-1.5 text-xs text-c-ink3">
-            <span className="w-2 h-2 rounded-full bg-strava-orange inline-block" />
-            {t.strategic.runsMaxCap}
-          </span>
+        {/* Best Times */}
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">{t.strategic.bestTimes}</h2>
+            <span className="text-xs text-c-ink3">{t.common.runOnly}</span>
+          </div>
+          <div className="p-5">
+            {loadingBestTimes ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-24 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--c-subtle)' }} />
+                ))}
+              </div>
+            ) : bestTimes ? (
+              <div className="grid grid-cols-2 gap-3">
+                {bestTimes.efforts.map((e) => (
+                  <div
+                    key={e.label}
+                    className={`rounded-xl border bg-gradient-to-br ${DISTANCE_COLORS[e.label] ?? 'from-gray-700/10 to-gray-700/5 border-c-border'} p-4 space-y-1`}
+                  >
+                    <p className={`text-xs font-bold uppercase tracking-widest ${DISTANCE_ACCENT[e.label] ?? 'text-c-ink2'}`}>{e.label}</p>
+                    <p className="text-2xl font-bold text-c-ink">{formatTime(e.best_time_sec)}</p>
+                    {e.best_pace_sec_km && (
+                      <p className="text-xs text-c-ink2">{formatPace(e.best_pace_sec_km)} /km</p>
+                    )}
+                    {e.activity_date && (
+                      <p className="text-[10px] text-c-ink3 pt-1">{e.activity_date}</p>
+                    )}
+                    {!e.best_pace_sec_km && (
+                      <p className="text-xs text-c-ink3 italic">{t.common.noData}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-c-ink3 text-sm">{t.strategic.noBestTimes}</p>
+            )}
+          </div>
         </div>
-        <div className="p-5">
-          {loadingTimeline ? (
-            <div className="h-56 bg-c-subtle animate-pulse rounded-lg" />
-          ) : timeline ? (
-            <PaceProgressionChart data={timeline} />
-          ) : (
-            <p className="text-c-ink3 text-sm py-8 text-center">{t.strategic.noRunData}</p>
-          )}
+
+        {/* Pace progression chart */}
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">{t.strategic.paceProgression}</h2>
+            <span className="flex items-center gap-1.5 text-xs text-c-ink3">
+              <span className="w-2 h-2 rounded-full bg-strava-orange inline-block" />
+              {t.strategic.runsMaxCap}
+            </span>
+          </div>
+          <div className="p-5">
+            {loadingTimeline ? (
+              <div className="h-48 bg-c-subtle animate-pulse rounded-lg" />
+            ) : timeline ? (
+              <PaceProgressionChart data={timeline} />
+            ) : (
+              <p className="text-c-ink3 text-sm py-8 text-center">{t.strategic.noRunData}</p>
+            )}
+          </div>
         </div>
+
       </div>
     </div>
   );
