@@ -53,6 +53,8 @@ def strava_callback(code: str, db: Session = Depends(get_db)):
 
     token = create_access_token({"athlete_id": athlete.athlete_id})
 
+    profile_photo = strava_athlete.get("profile_medium") or strava_athlete.get("profile") or ""
+
     # Redirect to /callback on the frontend — token in URL fragment so it never hits a server
     redirect_url = (
         f"{settings.frontend_url}/callback"
@@ -60,6 +62,7 @@ def strava_callback(code: str, db: Session = Depends(get_db)):
         f"&athlete_id={athlete.athlete_id}"
         f"&firstname={athlete.firstname or ''}"
         f"&lastname={athlete.lastname or ''}"
+        f"&photo={profile_photo}"
     )
     return RedirectResponse(url=redirect_url, status_code=302)
 
