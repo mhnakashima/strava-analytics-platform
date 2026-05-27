@@ -103,9 +103,9 @@ function RingGauge({
 
       {/* centre: TSB value + label */}
       <text
-        x={CX} y={CY - 10}
+        x={CX} y={CY + 10}
         textAnchor="middle"
-        fontSize="40"
+        fontSize="42"
         fontWeight="900"
         fill={color}
         style={{ fontFamily: 'system-ui, sans-serif' }}
@@ -113,7 +113,7 @@ function RingGauge({
         {tsbText}
       </text>
       <text
-        x={CX} y={CY + 14}
+        x={CX} y={CY + 30}
         textAnchor="middle"
         fontSize="9"
         fontWeight="700"
