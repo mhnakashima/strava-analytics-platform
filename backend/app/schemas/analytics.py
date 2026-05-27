@@ -64,3 +64,41 @@ class BestEffort(BaseModel):
 
 class BestTimes(BaseModel):
     efforts: list[BestEffort]
+
+
+class ClusterStat(BaseModel):
+    label: str                          # "leve" | "moderado" | "intenso"
+    count: int
+    avg_pace_sec_km: Optional[float]
+    avg_distance_km: Optional[float]
+    avg_heartrate: Optional[float]
+    avg_elevation_m: Optional[float]
+    avg_training_load: Optional[float]
+
+
+class ClusterTrendPoint(BaseModel):
+    week: str    # ISO week e.g. "2025-W03"
+    easy: int
+    moderate: int
+    hard: int
+
+
+class TrainingReadiness(BaseModel):
+    """
+    Banister Impulse-Response model output.
+    ATL = Acute Training Load (fatigue, τ=7d)
+    CTL = Chronic Training Load (fitness, τ=42d)
+    TSB = Training Stress Balance = CTL − ATL
+    """
+    atl: float
+    ctl: float
+    tsb: float
+    weekly_trimp: float
+    monthly_trimp: float
+    days_since_last: Optional[int]
+    last_activity_date: Optional[str]
+    readiness_level: str    # "peak" | "fresh" | "moderate" | "tired" | "rest"
+    readiness_title: str
+    readiness_advice: str
+    readiness_color: str    # hex colour for UI
+    readiness_icon: str

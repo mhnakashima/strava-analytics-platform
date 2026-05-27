@@ -13,6 +13,34 @@ from loguru import logger
 # Activity types where pace (time/distance) is a meaningful metric
 PACE_ACTIVITY_TYPES = {"Run", "TrailRun", "Walk", "Hike", "VirtualRun", "RaceWalk"}
 
+# MET values for calorie estimation when Strava doesn't return calories.
+# Strava's list endpoint returns calories=0 or null for many activities.
+# Formula: kcal = MET × assumed_weight_kg × duration_hours
+_MET: dict[str, float] = {
+    'Run': 10.0, 'TrailRun': 11.5, 'VirtualRun': 10.0,
+    'Ride': 8.0, 'VirtualRide': 8.0,
+    'Walk': 3.5, 'RaceWalk': 5.0, 'Hike': 6.0,
+    'WeightTraining': 4.0, 'Workout': 5.5,
+    'Yoga': 2.5, 'Swim': 8.0,
+    'Elliptical': 7.0, 'StairStepper': 9.0,
+    'Rowing': 7.0, 'Kayaking': 5.0,
+}
+_ASSUMED_WEIGHT_KG = 70.0
+
+
+def _resolve_calories(
+    strava_calories: float | None,
+    activity_type: str | None,
+    moving_time_sec: int | None,
+) -> float | None:
+    """Use Strava's value when available; fall back to MET estimation."""
+    if strava_calories and strava_calories > 0:
+        return strava_calories
+    if not moving_time_sec or moving_time_sec <= 0:
+        return None
+    met = _MET.get(activity_type or '', 7.0)
+    return round(met * _ASSUMED_WEIGHT_KG * (moving_time_sec / 3600), 1)
+
 # Activity types where KMeans intensity clustering makes sense
 CLUSTER_ACTIVITY_TYPES = {"Run", "TrailRun", "VirtualRun"}
 
@@ -105,7 +133,7 @@ def transform_activities(raw: list[dict], athlete_max_hr: int = 180) -> pd.DataF
                 "best_pace_sec_km": None,
                 "avg_heartrate": avg_hr,
                 "max_heartrate": max_hr,
-                "calories": act.get("calories"),
+                "calories": _resolve_calories(act.get("calories"), activity_type, moving_time),
                 "kudos_count": act.get("kudos_count", 0),
                 "training_load": trimp,
                 "activity_type": activity_type,

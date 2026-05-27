@@ -1,6 +1,7 @@
 import type React from 'react';
 import { formatPace } from '../../lib/utils';
 import type { ActivityKPIs } from '../../types';
+import { useT } from '../../hooks/useTranslation';
 
 interface KPICardProps {
   label: string;
@@ -28,10 +29,11 @@ interface Props {
 }
 
 export function KPIStrip({ kpis }: Props) {
+  const t = useT();
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
       <KPICard
-        label="Distance"
+        label={t.kpis.distance}
         value={`${kpis.total_distance_km.toFixed(0)} km`}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -40,7 +42,7 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Activities"
+        label={t.kpis.activities}
         value={String(kpis.total_activities)}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -49,9 +51,9 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Avg Pace"
+        label={t.kpis.avgPace}
         value={formatPace(kpis.avg_pace_sec_km)}
-        sub="per km (running)"
+        sub={t.common.perKmRunning}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
@@ -59,9 +61,9 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Best Pace"
+        label={t.kpis.bestPace}
         value={formatPace(kpis.best_pace_sec_km)}
-        sub="per km"
+        sub={t.common.perKm}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -69,8 +71,8 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Avg HR"
-        value={kpis.avg_heartrate ? `${kpis.avg_heartrate.toFixed(0)} bpm` : '—'}
+        label={t.kpis.avgHR}
+        value={kpis.avg_heartrate ? `${kpis.avg_heartrate.toFixed(0)} ${t.common.bpm}` : '—'}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -79,8 +81,8 @@ export function KPIStrip({ kpis }: Props) {
         accent="text-red-400"
       />
       <KPICard
-        label="Elevation"
-        value={`${kpis.total_elevation_m.toFixed(0)} m`}
+        label={t.kpis.elevation}
+        value={`${kpis.total_elevation_m.toFixed(0)} ${t.common.m}`}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <polygon points="3 17 9 3 15 12 19 8 21 17 3 17" />
@@ -89,9 +91,9 @@ export function KPIStrip({ kpis }: Props) {
         accent="text-emerald-400"
       />
       <KPICard
-        label="Calories"
+        label={t.kpis.calories}
         value={kpis.total_calories > 0 ? `${(kpis.total_calories / 1000).toFixed(1)}k` : '—'}
-        sub="kcal total"
+        sub={t.common.kcalTotal}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />

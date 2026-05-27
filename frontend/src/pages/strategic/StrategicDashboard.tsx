@@ -1,8 +1,10 @@
 import { useShallow } from 'zustand/react/shallow';
 import { PaceProgressionChart } from '../../components/charts/PaceProgressionChart';
 import { KPIStrip } from '../../components/ui/KPIStrip';
-import { useActivityKPIs, useBestTimes, useLastActivity, useTimeline } from '../../hooks/useActivities';
+import { TrainingReadinessCard } from '../../components/ui/TrainingReadinessCard';
+import { useActivityKPIs, useBestTimes, useLastActivity, useTimeline, useTrainingReadiness } from '../../hooks/useActivities';
 import { useFiltersStore } from '../../store/useFiltersStore';
+import { useT } from '../../hooks/useTranslation';
 import { formatDistance, formatDuration, formatPace } from '../../lib/utils';
 
 const ACTIVITY_ICONS: Record<string, string> = {
@@ -37,6 +39,7 @@ function formatTime(sec: number | null): string {
 const PACE_TYPES = new Set(['Run', 'TrailRun', 'Walk', 'Hike', 'VirtualRun', 'RaceWalk']);
 
 export default function StrategicDashboard() {
+  const t = useT();
   const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
 
   const { data: kpis, isLoading: loadingKPIs } = useActivityKPIs(params);
@@ -46,6 +49,7 @@ export default function StrategicDashboard() {
   });
   const { data: bestTimes, isLoading: loadingBestTimes } = useBestTimes();
   const { data: lastActivity } = useLastActivity();
+  const { data: readiness, isLoading: loadingReadiness } = useTrainingReadiness();
 
   const hasPaceLast = lastActivity?.activity_type ? PACE_TYPES.has(lastActivity.activity_type) : false;
 
@@ -53,8 +57,8 @@ export default function StrategicDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-c-ink">Strategic Dashboard</h1>
-        <p className="text-sm text-c-ink3 mt-0.5">Performance overview over time</p>
+        <h1 className="text-xl font-bold text-c-ink">{t.strategic.title}</h1>
+        <p className="text-sm text-c-ink3 mt-0.5">{t.strategic.subtitle}</p>
       </div>
 
       {/* KPIs */}
@@ -68,13 +72,20 @@ export default function StrategicDashboard() {
         <KPIStrip kpis={kpis} />
       ) : null}
 
+      {/* Training Readiness card */}
+      {loadingReadiness ? (
+        <div className="h-52 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--c-raised)' }} />
+      ) : readiness ? (
+        <TrainingReadinessCard data={readiness} />
+      ) : null}
+
       {/* Best times + last activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Best times — 2/3 width */}
         <div className="lg:col-span-2 card">
           <div className="card-header">
-            <h2 className="card-title">Best Times</h2>
-            <span className="text-xs text-c-ink3">Running activities only</span>
+            <h2 className="card-title">{t.strategic.bestTimes}</h2>
+            <span className="text-xs text-c-ink3">{t.common.runOnly}</span>
           </div>
           <div className="p-5">
             {loadingBestTimes ? (
@@ -113,7 +124,7 @@ export default function StrategicDashboard() {
         {/* Last activity — 1/3 width */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Last Activity</h2>
+            <h2 className="card-title">{t.strategic.lastActivity}</h2>
           </div>
           <div className="p-5">
             {lastActivity ? (
@@ -158,10 +169,10 @@ export default function StrategicDashboard() {
       {/* Pace chart */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Pace Progression — Runs</h2>
+          <h2 className="card-title">{t.strategic.paceProgression}</h2>
           <span className="flex items-center gap-1.5 text-xs text-c-ink3">
             <span className="w-2 h-2 rounded-full bg-strava-orange inline-block" />
-            Runs only · max 15 min/km
+            {t.strategic.runsMaxCap}
           </span>
         </div>
         <div className="p-5">

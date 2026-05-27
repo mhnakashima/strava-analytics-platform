@@ -43,6 +43,9 @@ export const analyticsApi = {
   trainingProfile: () => apiClient.get('/analytics/training-profile').then((r) => r.data),
   bestTimes: () => apiClient.get('/analytics/best-times').then((r) => r.data),
   lastActivity: () => apiClient.get('/analytics/last-activity').then((r) => r.data),
+  clusterStats: () => apiClient.get('/analytics/cluster-stats').then((r) => r.data),
+  clusterTrend: () => apiClient.get('/analytics/cluster-trend').then((r) => r.data),
+  trainingReadiness: () => apiClient.get('/analytics/training-readiness').then((r) => r.data),
 };
 
 // ── ML ────────────────────────────────────────────────────────

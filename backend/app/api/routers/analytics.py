@@ -11,10 +11,13 @@ from app.schemas.analytics import (
     BestEffort,
     BestTimes,
     ClusterPoint,
+    ClusterStat,
+    ClusterTrendPoint,
     ComparisonReport,
     ConsistencyReport,
     HRZoneDistribution,
     TrainingProfile,
+    TrainingReadiness,
     TrendPoint,
 )
 from app.schemas.activity import ActivitySummary
@@ -22,7 +25,7 @@ from app.schemas.activity import ActivitySummary
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
-@router.get("/trends", response_model=list[TrendPoint], summary="Tendências semanais/mensais")
+@router.get("/trends", response_model=list[TrendPoint], summary="Weekly / monthly trends")
 def get_trends(
     granularity: str = "month",
     start_date: Optional[str] = None,
@@ -35,7 +38,7 @@ def get_trends(
     return [TrendPoint(period=p["date"] or "", distance_km=p["distance_km"], activities=1, avg_pace_sec_km=p["avg_pace_sec_km"], avg_heartrate=p["avg_heartrate"]) for p in points]
 
 
-@router.get("/heartrate", response_model=HRZoneDistribution, summary="Distribuição de zonas cardíacas")
+@router.get("/heartrate", response_model=HRZoneDistribution, summary="Heart-rate zone distribution")
 def get_hr_zones(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
@@ -100,7 +103,7 @@ def get_hr_zones(
     )
 
 
-@router.get("/consistency", response_model=ConsistencyReport, summary="Score de consistência")
+@router.get("/consistency", response_model=ConsistencyReport, summary="Consistency score")
 def get_consistency(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
@@ -127,7 +130,7 @@ def get_consistency(
     )
 
 
-@router.get("/clusters", response_model=list[ClusterPoint], summary="Pontos para scatter de clusters ML")
+@router.get("/clusters", response_model=list[ClusterPoint], summary="Cluster scatter points")
 def get_cluster_points(
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
@@ -148,7 +151,25 @@ def get_cluster_points(
     ]
 
 
-@router.get("/best-times", response_model=BestTimes, summary="Melhores tempos em distâncias padrão")
+@router.get("/cluster-stats", response_model=list[ClusterStat], summary="Cluster centroid statistics")
+def get_cluster_stats(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    repo = ActivityRepository(db)
+    return [ClusterStat(**s) for s in repo.get_cluster_stats(athlete_id)]
+
+
+@router.get("/cluster-trend", response_model=list[ClusterTrendPoint], summary="Weekly cluster distribution")
+def get_cluster_trend(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    repo = ActivityRepository(db)
+    return [ClusterTrendPoint(**p) for p in repo.get_cluster_trend(athlete_id)]
+
+
+@router.get("/best-times", response_model=BestTimes, summary="Best times at standard distances")
 def get_best_times(
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
@@ -158,7 +179,7 @@ def get_best_times(
     return BestTimes(efforts=[BestEffort(**e) for e in efforts])
 
 
-@router.get("/last-activity", response_model=ActivitySummary, summary="Última atividade registrada")
+@router.get("/last-activity", response_model=ActivitySummary, summary="Most recent activity")
 def get_last_activity(
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),
@@ -182,7 +203,16 @@ def get_last_activity(
     )
 
 
-@router.get("/training-profile", response_model=TrainingProfile, summary="Perfil de intensidade por cluster")
+@router.get("/training-readiness", response_model=TrainingReadiness, summary="Today's readiness — ATL/CTL/TSB model")
+def get_training_readiness(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    repo = ActivityRepository(db)
+    return TrainingReadiness(**repo.get_training_readiness(athlete_id))
+
+
+@router.get("/training-profile", response_model=TrainingProfile, summary="Intensity profile by cluster")
 def get_training_profile(
     athlete_id: int = Depends(get_current_athlete_id),
     db: Session = Depends(get_db),

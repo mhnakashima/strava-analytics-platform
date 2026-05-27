@@ -2,7 +2,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HRZoneDistribution } from '../../types';
 
 const ZONE_COLORS = ['#22c55e', '#84cc16', '#f59e0b', '#f97316', '#ef4444'];
-const ZONE_LABELS = ['Zona 1 (50–60%)', 'Zona 2 (60–70%)', 'Zona 3 (70–80%)', 'Zona 4 (80–90%)', 'Zona 5 (90–100%)'];
+const ZONE_LABELS = ['Zone 1 (50–60%)', 'Zone 2 (60–70%)', 'Zone 3 (70–80%)', 'Zone 4 (80–90%)', 'Zone 5 (90–100%)'];
 
 interface Props {
   data: HRZoneDistribution;

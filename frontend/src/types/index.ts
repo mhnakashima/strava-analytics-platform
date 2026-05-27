@@ -83,6 +83,40 @@ export interface BestTimes {
   efforts: BestEffort[];
 }
 
+export interface ClusterStat {
+  label: 'leve' | 'moderado' | 'intenso';
+  count: number;
+  avg_pace_sec_km: number | null;
+  avg_distance_km: number | null;
+  avg_heartrate: number | null;
+  avg_elevation_m: number | null;
+  avg_training_load: number | null;
+}
+
+export interface ClusterTrendPoint {
+  week: string;
+  easy: number;
+  moderate: number;
+  hard: number;
+}
+
+export type ReadinessLevel = 'peak' | 'fresh' | 'moderate' | 'tired' | 'rest';
+
+export interface TrainingReadiness {
+  atl: number;
+  ctl: number;
+  tsb: number;
+  weekly_trimp: number;
+  monthly_trimp: number;
+  days_since_last: number | null;
+  last_activity_date: string | null;
+  readiness_level: ReadinessLevel;
+  readiness_title: string;
+  readiness_advice: string;
+  readiness_color: string;
+  readiness_icon: string;
+}
+
 export interface Filters {
   startDate: string | null;
   endDate: string | null;
