@@ -66,6 +66,7 @@ export const translations = {
       avgHR: 'Avg HR',
       elevation: 'Elevation',
       calories: 'Calories',
+      avgLoad: 'Avg Load',
     },
     tactical: {
       title: 'Tactical Dashboard',
@@ -326,6 +327,7 @@ export const translations = {
       avgHR: 'FC Média',
       elevation: 'Elevação',
       calories: 'Calorias',
+      avgLoad: 'Carga Média',
     },
     tactical: {
       title: 'Dashboard Tático',

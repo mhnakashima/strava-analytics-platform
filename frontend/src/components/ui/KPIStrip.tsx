@@ -1,5 +1,5 @@
 import type React from 'react';
-import { formatPace } from '../../lib/utils';
+import { formatDuration, formatPace } from '../../lib/utils';
 import type { ActivityKPIs } from '../../types';
 import { useT } from '../../hooks/useTranslation';
 
@@ -13,13 +13,13 @@ interface KPICardProps {
 
 function KPICard({ label, value, sub, icon, accent = 'text-strava-orange' }: KPICardProps) {
   return (
-    <div className="card p-4 flex flex-col gap-2 hover:border-c-ink3 transition-colors">
+    <div className="rounded-xl p-4 flex flex-col gap-2" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-border)' }}>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-c-ink3 uppercase tracking-widest leading-tight">{label}</span>
-        <span className={`${accent} opacity-70`}>{icon}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest leading-tight" style={{ color: 'var(--c-ink3)' }}>{label}</span>
+        <span className={`${accent} opacity-60`}>{icon}</span>
       </div>
-      <span className="text-2xl font-bold text-c-ink leading-none">{value}</span>
-      {sub && <span className="text-xs text-c-ink3">{sub}</span>}
+      <span className="text-xl font-bold leading-none" style={{ color: 'var(--c-ink)' }}>{value}</span>
+      {sub && <span className="text-[10px]" style={{ color: 'var(--c-ink3)' }}>{sub}</span>}
     </div>
   );
 }
@@ -30,8 +30,9 @@ interface Props {
 
 export function KPIStrip({ kpis }: Props) {
   const t = useT();
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+    <div className="grid grid-cols-2 gap-3">
       <KPICard
         label={t.kpis.distance}
         value={`${kpis.total_distance_km.toFixed(0)} km`}
@@ -61,16 +62,6 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label={t.kpis.bestPace}
-        value={formatPace(kpis.best_pace_sec_km)}
-        sub={t.common.perKm}
-        icon={
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-        }
-      />
-      <KPICard
         label={t.kpis.avgHR}
         value={kpis.avg_heartrate ? `${kpis.avg_heartrate.toFixed(0)} ${t.common.bpm}` : '—'}
         icon={
@@ -79,16 +70,6 @@ export function KPIStrip({ kpis }: Props) {
           </svg>
         }
         accent="text-red-400"
-      />
-      <KPICard
-        label={t.kpis.elevation}
-        value={`${kpis.total_elevation_m.toFixed(0)} ${t.common.m}`}
-        icon={
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <polygon points="3 17 9 3 15 12 19 8 21 17 3 17" />
-          </svg>
-        }
-        accent="text-emerald-400"
       />
       <KPICard
         label={t.kpis.calories}
@@ -101,6 +82,17 @@ export function KPIStrip({ kpis }: Props) {
           </svg>
         }
         accent="text-amber-400"
+      />
+      <KPICard
+        label={t.kpis.avgLoad}
+        value={kpis.avg_training_load != null ? kpis.avg_training_load.toFixed(0) : '—'}
+        sub="TRIMP / session"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        }
+        accent="text-purple-400"
       />
     </div>
   );
