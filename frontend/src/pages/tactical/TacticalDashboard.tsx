@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useHRZones, useTimeline } from '../../hooks/useActivities';
 import { useFiltersStore } from '../../store/useFiltersStore';
+import { useT } from '../../hooks/useTranslation';
 
 function isoWeek(dateStr: string): string {
   const d = new Date(dateStr);
@@ -14,7 +15,11 @@ function isoWeek(dateStr: string): string {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
+const HR_COLORS = ['#22c55e', '#84cc16', '#f59e0b', '#f97316', '#ef4444'];
+const HR_ZONE_KEYS = ['zone_1_pct', 'zone_2_pct', 'zone_3_pct', 'zone_4_pct', 'zone_5_pct'] as const;
+
 export default function TacticalDashboard() {
+  const t = useT();
   const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
   const { data: hrZones, isLoading: loadingHR } = useHRZones(params);
   const { data: timeline, isLoading: loadingTimeline } = useTimeline(params);
@@ -33,36 +38,30 @@ export default function TacticalDashboard() {
   }, [timeline]);
 
   const hrRingData = hrZones
-    ? [
-        { name: 'Z1', value: hrZones.zone_1_pct, fill: '#22c55e' },
-        { name: 'Z2', value: hrZones.zone_2_pct, fill: '#84cc16' },
-        { name: 'Z3', value: hrZones.zone_3_pct, fill: '#f59e0b' },
-        { name: 'Z4', value: hrZones.zone_4_pct, fill: '#f97316' },
-        { name: 'Z5', value: hrZones.zone_5_pct, fill: '#ef4444' },
-      ].filter((d) => d.value > 0)
+    ? HR_ZONE_KEYS
+        .map((k, i) => ({ name: `Z${i + 1}`, value: hrZones[k], fill: HR_COLORS[i] }))
+        .filter((d) => d.value > 0)
     : [];
 
-  const HR_ZONES_INFO = [
-    { label: 'Zone 1 — Active recovery', pct: hrZones?.zone_1_pct ?? 0, color: '#22c55e' },
-    { label: 'Zone 2 — Aerobic base',    pct: hrZones?.zone_2_pct ?? 0, color: '#84cc16' },
-    { label: 'Zone 3 — Moderate aerobic',pct: hrZones?.zone_3_pct ?? 0, color: '#f59e0b' },
-    { label: 'Zone 4 — Lactate threshold',pct: hrZones?.zone_4_pct ?? 0, color: '#f97316' },
-    { label: 'Zone 5 — VO₂ Max',         pct: hrZones?.zone_5_pct ?? 0, color: '#ef4444' },
-  ];
+  const hrProfileData = t.tactical.zoneLabels.map((label, i) => ({
+    label,
+    pct: hrZones ? hrZones[HR_ZONE_KEYS[i]] : 0,
+    color: HR_COLORS[i],
+  }));
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-c-ink">Tactical Dashboard</h1>
-        <p className="text-sm text-c-ink3 mt-0.5">Training load, heart rate zones and weekly volume</p>
+        <h1 className="text-xl font-bold text-c-ink">{t.tactical.title}</h1>
+        <p className="text-sm text-c-ink3 mt-0.5">{t.tactical.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* HR Zone donut */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Heart Rate Zone Distribution</h2>
-            <span className="text-xs text-c-ink3">% of time per zone</span>
+            <h2 className="card-title">{t.tactical.hrZones}</h2>
+            <span className="text-xs text-c-ink3">{t.tactical.pctPerZone}</span>
           </div>
           <div className="p-5">
             {loadingHR ? (
@@ -105,7 +104,7 @@ export default function TacticalDashboard() {
                 </div>
               </div>
             ) : (
-              <p className="text-c-ink3 text-sm py-8 text-center">No heart rate data available</p>
+              <p className="text-c-ink3 text-sm py-8 text-center">{t.tactical.noHRData}</p>
             )}
           </div>
         </div>
@@ -113,14 +112,14 @@ export default function TacticalDashboard() {
         {/* Intensity profile bars */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Intensity Profile</h2>
+            <h2 className="card-title">{t.tactical.intensityProfile}</h2>
           </div>
           <div className="p-5">
             {loadingHR ? (
               <div className="h-56 bg-c-subtle animate-pulse rounded-lg" />
             ) : hrZones ? (
               <div className="space-y-3 pt-2">
-                {HR_ZONES_INFO.map((z) => (
+                {hrProfileData.map((z) => (
                   <div key={z.label} className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-c-ink2">{z.label}</span>
@@ -136,7 +135,7 @@ export default function TacticalDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-c-ink3 text-sm py-8 text-center">No data available</p>
+              <p className="text-c-ink3 text-sm py-8 text-center">{t.tactical.noData}</p>
             )}
           </div>
         </div>
@@ -145,8 +144,8 @@ export default function TacticalDashboard() {
       {/* Weekly volume */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Weekly Volume (km)</h2>
-          <span className="text-xs text-c-ink3">Last 16 weeks</span>
+          <h2 className="card-title">{t.tactical.weeklyVolume}</h2>
+          <span className="text-xs text-c-ink3">{t.tactical.last16Weeks}</span>
         </div>
         <div className="p-5">
           {loadingTimeline ? (
@@ -158,8 +157,8 @@ export default function TacticalDashboard() {
                 <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'var(--c-ink3)' }} />
                 <YAxis tick={{ fontSize: 10, fill: 'var(--c-ink3)' }} tickFormatter={(v) => `${v}km`} width={40} />
                 <Tooltip
-                  formatter={(v) => [`${(Number(v)).toFixed(1)} km`, 'Volume']}
-                  labelFormatter={(l) => `Week ${l}`}
+                  formatter={(v) => [`${(Number(v)).toFixed(1)} km`, t.tactical.volumeLabel]}
+                  labelFormatter={(l) => `${t.tactical.weekLabel} ${l}`}
                   contentStyle={{ background: 'var(--c-tooltip)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: 'var(--c-ink)' }}
                 />
@@ -167,7 +166,7 @@ export default function TacticalDashboard() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-c-ink3 text-sm py-8 text-center">No volume data available</p>
+            <p className="text-c-ink3 text-sm py-8 text-center">{t.tactical.noVolumeData}</p>
           )}
         </div>
       </div>

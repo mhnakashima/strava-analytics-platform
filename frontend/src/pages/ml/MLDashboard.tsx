@@ -13,37 +13,26 @@ import { useClusterPoints, useClusterStats, useClusterTrend, useTrainingProfile 
 import { clusterColor, formatPace } from '../../lib/utils';
 import { mlApi } from '../../services/api';
 import type { ClusterStat } from '../../types';
+import { useT } from '../../hooks/useTranslation';
 
-const CLUSTER_META: Record<string, { icon: string; label: string; desc: string; advice: string }> = {
-  leve: {
-    icon: '🟢',
-    label: 'Easy',
-    desc: 'Short or fast runs with low cardiovascular load — speed intervals, warm-ups, recovery jogs.',
-    advice: 'Ideal for active recovery or speed/velocity work.',
-  },
-  moderado: {
-    icon: '🟡',
-    label: 'Moderate',
-    desc: 'Steady-effort runs — the bread and butter of training. Neither too easy nor exhausting.',
-    advice: 'Should be ~80% of your weekly volume (80/20 principle).',
-  },
-  intenso: {
-    icon: '🔴',
-    label: 'Hard',
-    desc: 'Long runs, high cardiac load, or significant elevation — marathons, long trails, threshold workouts.',
-    advice: 'Max ~20% of volume. Requires 48–72h recovery.',
-  },
+const CLUSTER_ICONS: Record<string, string> = {
+  leve: '🟢',
+  moderado: '🟡',
+  intenso: '🔴',
 };
 
 /* ── Cluster Comparison Table ──────────────────────────── */
 function ClusterStatsTable({ stats }: { stats: ClusterStat[] }) {
+  const t = useT();
+  const m = t.ml.tableMetrics;
+
   const rows: { key: string; label: string; fmt: (s: ClusterStat) => string }[] = [
-    { key: 'count',     label: 'Activities',    fmt: (s) => String(s.count) },
-    { key: 'pace',      label: 'Avg pace',       fmt: (s) => formatPace(s.avg_pace_sec_km) },
-    { key: 'dist',      label: 'Avg distance',   fmt: (s) => s.avg_distance_km != null ? `${s.avg_distance_km.toFixed(1)} km` : '—' },
-    { key: 'hr',        label: 'Avg heart rate', fmt: (s) => s.avg_heartrate != null ? `${s.avg_heartrate.toFixed(0)} bpm` : '—' },
-    { key: 'elev',      label: 'Avg elevation',  fmt: (s) => s.avg_elevation_m != null ? `${s.avg_elevation_m.toFixed(0)} m` : '—' },
-    { key: 'load',      label: 'Avg TRIMP',      fmt: (s) => s.avg_training_load != null ? s.avg_training_load.toFixed(0) : '—' },
+    { key: 'count', label: m.activities,  fmt: (s) => String(s.count) },
+    { key: 'pace',  label: m.avgPace,     fmt: (s) => formatPace(s.avg_pace_sec_km) },
+    { key: 'dist',  label: m.avgDistance, fmt: (s) => s.avg_distance_km != null ? `${s.avg_distance_km.toFixed(1)} km` : '—' },
+    { key: 'hr',    label: m.avgHR,       fmt: (s) => s.avg_heartrate != null ? `${s.avg_heartrate.toFixed(0)} bpm` : '—' },
+    { key: 'elev',  label: m.avgElev,     fmt: (s) => s.avg_elevation_m != null ? `${s.avg_elevation_m.toFixed(0)} m` : '—' },
+    { key: 'load',  label: m.avgTrimp,    fmt: (s) => s.avg_training_load != null ? s.avg_training_load.toFixed(0) : '—' },
   ];
 
   return (
@@ -52,14 +41,14 @@ function ClusterStatsTable({ stats }: { stats: ClusterStat[] }) {
         <thead>
           <tr style={{ borderBottom: '1px solid var(--c-border)' }}>
             <th className="text-left py-2 pr-4 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-ink3)' }}>
-              Metric
+              {/* metric col header intentionally blank */}
             </th>
             {stats.map((s) => {
-              const meta = CLUSTER_META[s.label];
+              const meta = t.ml.clusterMeta[s.label];
               return (
                 <th key={s.label} className="text-center py-2 px-3">
                   <div className="flex items-center justify-center gap-1.5">
-                    <span>{meta?.icon}</span>
+                    <span>{CLUSTER_ICONS[s.label]}</span>
                     <span className="text-xs font-bold uppercase tracking-widest" style={{ color: clusterColor(s.label) }}>
                       {meta?.label}
                     </span>
@@ -113,6 +102,9 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 export default function MLDashboard() {
+  const t = useT();
+  const ml = t.ml;
+
   const { data: clusters, isLoading: clustersLoading } = useClusterPoints();
   const { data: profile } = useTrainingProfile();
   const { data: stats } = useClusterStats();
@@ -124,8 +116,6 @@ export default function MLDashboard() {
   };
 
   const dominant = profile?.dominant_cluster;
-
-  // Show last 16 weeks in the trend chart
   const trendSlice = trend?.slice(-16) ?? [];
 
   return (
@@ -133,16 +123,14 @@ export default function MLDashboard() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--c-ink)' }}>Machine Learning — Training Clusters</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--c-ink3)' }}>
-            KMeans k=3 · runs only (Run / TrailRun / VirtualRun) · 4 features: pace, distance, HR, elevation
-          </p>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--c-ink)' }}>{ml.title}</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--c-ink3)' }}>{ml.subtitle}</p>
         </div>
         <button onClick={handleRetrain} className="btn-primary text-sm shrink-0">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Retrain
+          {ml.retrain}
         </button>
       </div>
 
@@ -150,19 +138,19 @@ export default function MLDashboard() {
       {profile && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {(['leve', 'moderado', 'intenso'] as const).map((label) => {
-            const meta = CLUSTER_META[label];
+            const meta = ml.clusterMeta[label];
             const isDom = dominant === label;
             const pct = profile[`${label}_pct` as keyof typeof profile] as number;
             return (
               <div key={label} className={`card p-5 space-y-3 ${isDom ? 'ring-1 ring-strava-orange/30' : ''}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{meta.icon}</span>
+                    <span className="text-lg">{CLUSTER_ICONS[label]}</span>
                     <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--c-ink2)' }}>{meta.label}</span>
                   </div>
                   {isDom && (
                     <span className="text-[10px] font-semibold text-strava-orange bg-strava-orange/10 px-2 py-0.5 rounded-full">
-                      Dominant
+                      {ml.dominant}
                     </span>
                   )}
                 </div>
@@ -187,21 +175,21 @@ export default function MLDashboard() {
         {/* Stats table */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Cluster Centroids</h2>
-            <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>Average values per category</span>
+            <h2 className="card-title">{ml.clusterCentroids}</h2>
+            <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>{ml.avgValues}</span>
           </div>
           <div className="p-5">
             {stats && stats.length > 0
               ? <ClusterStatsTable stats={stats} />
-              : <p className="text-sm text-center py-6" style={{ color: 'var(--c-ink3)' }}>No cluster data — run ETL first.</p>}
+              : <p className="text-sm text-center py-6" style={{ color: 'var(--c-ink3)' }}>{ml.noClusterData}</p>}
           </div>
         </div>
 
         {/* Scatter plot */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Pace vs Distance</h2>
-            <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>🟢 easy · 🟡 moderate · 🔴 hard</span>
+            <h2 className="card-title">{ml.scatterTitle}</h2>
+            <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>🟢 {ml.clusterMeta.leve.label.toLowerCase()} · 🟡 {ml.clusterMeta.moderado.label.toLowerCase()} · 🔴 {ml.clusterMeta.intenso.label.toLowerCase()}</span>
           </div>
           <div className="p-5">
             {clustersLoading ? (
@@ -209,9 +197,7 @@ export default function MLDashboard() {
             ) : clusters && clusters.length > 0 ? (
               <TrainingClustersScatter data={clusters} />
             ) : (
-              <p className="text-sm text-center py-8" style={{ color: 'var(--c-ink3)' }}>
-                No cluster data. Only runs are clustered — run the ETL to update.
-              </p>
+              <p className="text-sm text-center py-8" style={{ color: 'var(--c-ink3)' }}>{ml.noScatterData}</p>
             )}
           </div>
         </div>
@@ -220,8 +206,8 @@ export default function MLDashboard() {
       {/* Weekly cluster trend */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Weekly Training Distribution</h2>
-          <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>Last 16 weeks — stacked easy / moderate / hard runs</span>
+          <h2 className="card-title">{ml.weeklyDist}</h2>
+          <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>{ml.weeklyDistSub}</span>
         </div>
         <div className="p-5">
           {trendLoading ? (
@@ -243,15 +229,13 @@ export default function MLDashboard() {
                   wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
                   formatter={(v) => <span style={{ color: 'var(--c-ink2)' }}>{v}</span>}
                 />
-                <Bar dataKey="easy"     name="Easy"     stackId="a" fill="#22c55e" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="moderate" name="Moderate" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="hard"     name="Hard"     stackId="a" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="easy"     name={ml.clusterMeta.leve.label}     stackId="a" fill="#22c55e" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="moderate" name={ml.clusterMeta.moderado.label} stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="hard"     name={ml.clusterMeta.intenso.label}  stackId="a" fill="#ef4444" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-center py-8" style={{ color: 'var(--c-ink3)' }}>
-              No trend data yet. Run the ETL to populate.
-            </p>
+            <p className="text-sm text-center py-8" style={{ color: 'var(--c-ink3)' }}>{ml.noTrendData}</p>
           )}
         </div>
       </div>
@@ -259,24 +243,17 @@ export default function MLDashboard() {
       {/* How it works */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">How does the clustering work?</h2>
+          <h2 className="card-title">{ml.howItWorks}</h2>
         </div>
         <div className="p-5 space-y-5">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>The KMeans algorithm</h3>
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>{ml.algorithm.title}</h3>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--c-ink2)' }}>
-                KMeans automatically groups your runs into 3 intensity categories — no manual labelling needed.
-                All features are <span className="font-medium" style={{ color: 'var(--c-ink)' }}>StandardScaler-normalised</span> before
-                fitting so that pace and distance don't dominate over HR. It analyses 4 features simultaneously:
+                {ml.algorithm.desc}
               </p>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: '⏱️', label: 'Avg Pace',     desc: 'Speed relative to distance' },
-                  { icon: '📏', label: 'Distance',     desc: 'Volume per session' },
-                  { icon: '❤️', label: 'Avg HR',       desc: 'Cardiovascular effort' },
-                  { icon: '⛰️', label: 'Elevation',    desc: 'Terrain difficulty' },
-                ].map((f) => (
+                {ml.algorithm.features.map((f) => (
                   <div key={f.label} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--c-raised)' }}>
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <span>{f.icon}</span>
@@ -289,18 +266,14 @@ export default function MLDashboard() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>How to read the chart</h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--c-ink2)' }}>
-                Each dot is one run. X-axis = distance; Y-axis = pace
-                (lower value = faster — a dot near the top is slower).
-                Colour shows the cluster the model assigned.
-              </p>
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>{ml.algorithm.chartTitle}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--c-ink2)' }}>{ml.algorithm.chartDesc}</p>
               <div className="space-y-2 mt-1">
-                {[
-                  { color: '#22c55e', label: 'Easy',     desc: 'Fast and short — speed intervals, warm-ups' },
-                  { color: '#f59e0b', label: 'Moderate', desc: 'Sustained pace — base runs, tempo efforts' },
-                  { color: '#ef4444', label: 'Hard',     desc: 'Long and heavy — long runs, trails with elevation' },
-                ].map((c) => (
+                {([
+                  { color: '#22c55e', label: ml.clusterMeta.leve.label,     desc: ml.scatter.easyDesc },
+                  { color: '#f59e0b', label: ml.clusterMeta.moderado.label, desc: ml.scatter.moderateDesc },
+                  { color: '#ef4444', label: ml.clusterMeta.intenso.label,  desc: ml.scatter.hardDesc },
+                ] as { color: string; label: string; desc: string }[]).map((c) => (
                   <div key={c.label} className="flex gap-3 items-start">
                     <span className="w-2.5 h-2.5 rounded-full mt-1 shrink-0" style={{ background: c.color }} />
                     <p className="text-xs" style={{ color: 'var(--c-ink2)' }}>
@@ -310,11 +283,10 @@ export default function MLDashboard() {
                 ))}
               </div>
               <div className="rounded-lg p-3 text-xs space-y-1 mt-2" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-border)' }}>
-                <p className="font-semibold" style={{ color: 'var(--c-ink)' }}>Model details</p>
-                <p style={{ color: 'var(--c-ink3)' }}>Algorithm: KMeans (scikit-learn) · k = 3</p>
-                <p style={{ color: 'var(--c-ink3)' }}>Preprocessing: StandardScaler (z-score)</p>
-                <p style={{ color: 'var(--c-ink3)' }}>Silhouette score ≈ 0.48 (good separation)</p>
-                <p style={{ color: 'var(--c-ink3)' }}>Model persisted via joblib for fast inference</p>
+                <p className="font-semibold" style={{ color: 'var(--c-ink)' }}>{ml.algorithm.modelTitle}</p>
+                {ml.algorithm.modelLines.map((line) => (
+                  <p key={line} style={{ color: 'var(--c-ink3)' }}>{line}</p>
+                ))}
               </div>
             </div>
           </div>
@@ -324,34 +296,22 @@ export default function MLDashboard() {
             <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: 'rgba(252,76,2,0.05)', border: '1px solid rgba(252,76,2,0.2)' }}>
               <div className="flex items-center gap-2">
                 <span style={{ color: '#FC4C02' }}>💡</span>
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>Your training profile analysis</h3>
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>{ml.profile.title}</h3>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--c-ink2)' }}>
-                The <span className="font-medium" style={{ color: 'var(--c-ink)' }}>80/20 polarisation principle</span> says ~80% of training
-                volume should be easy (Zone 1–2) and ~20% hard (Zone 4–5), with very little in the grey zone (moderate).
-                {profile.moderado_pct > 60 && profile.intenso_pct < 15 && (
-                  <> Your current profile ({profile.moderado_pct}% moderate) suggests you may be stuck in the
-                  "grey zone" — not easy enough to recover, not hard enough to trigger adaptations.
-                  Try adding more truly easy runs and one weekly speed session.</>
-                )}
-                {profile.intenso_pct > 30 && (
-                  <> With {profile.intenso_pct}% hard sessions, you risk overtraining. Reduce intensity
-                  and replace some hard sessions with recovery jogs.</>
-                )}
-                {profile.leve_pct > 50 && profile.intenso_pct < 20 && (
-                  <> Your profile shows {profile.leve_pct}% easy runs — solid aerobic base!
-                  Consider adding 1–2 tempo or threshold sessions per week to widen your adaptations.</>
-                )}
-                {profile.moderado_pct <= 60 && profile.intenso_pct <= 30 && profile.leve_pct <= 50 && (
-                  <> Your distribution looks balanced. Keep monitoring as your volume grows to maintain the 80/20 ratio.</>
-                )}
+                <span className="font-medium" style={{ color: 'var(--c-ink)' }}>{ml.profile.principle}</span>{' '}
+                {ml.profile.principleDesc}
+                {profile.moderado_pct > 60 && profile.intenso_pct < 15 && ml.profile.greyZone(profile.moderado_pct)}
+                {profile.intenso_pct > 30 && ml.profile.overtrain(profile.intenso_pct)}
+                {profile.leve_pct > 50 && profile.intenso_pct < 20 && ml.profile.goodBase(profile.leve_pct)}
+                {profile.moderado_pct <= 60 && profile.intenso_pct <= 30 && profile.leve_pct <= 50 && ml.profile.balanced}
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 {(['leve', 'moderado', 'intenso'] as const).map((k) => (
                   <div key={k} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full" style={{ background: clusterColor(k) }} />
                     <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>
-                      {CLUSTER_META[k].label}: <span className="font-semibold" style={{ color: 'var(--c-ink)' }}>
+                      {ml.clusterMeta[k].label}: <span className="font-semibold" style={{ color: 'var(--c-ink)' }}>
                         {profile[`${k}_pct` as keyof typeof profile]}%
                       </span>
                     </span>

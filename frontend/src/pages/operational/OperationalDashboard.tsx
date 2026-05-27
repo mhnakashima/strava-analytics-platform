@@ -4,21 +4,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { formatDistance, formatDuration, formatPace } from '../../lib/utils';
 import { useActivities } from '../../hooks/useActivities';
 import { useFiltersStore } from '../../store/useFiltersStore';
+import { useT } from '../../hooks/useTranslation';
 
 const PAGE_SIZE = 15;
-
-const ACTIVITY_TYPES = [
-  { value: '', label: 'All',          emoji: '📋' },
-  { value: 'Run',           label: 'Run',           emoji: '🏃' },
-  { value: 'TrailRun',      label: 'Trail',         emoji: '⛰️' },
-  { value: 'Walk',          label: 'Walk',          emoji: '🚶' },
-  { value: 'Hike',          label: 'Hike',          emoji: '🥾' },
-  { value: 'Ride',          label: 'Cycling',       emoji: '🚴' },
-  { value: 'Swim',          label: 'Swim',          emoji: '🏊' },
-  { value: 'WeightTraining',label: 'Weights',       emoji: '🏋️' },
-  { value: 'Workout',       label: 'Workout',       emoji: '💪' },
-  { value: 'Yoga',          label: 'Yoga',          emoji: '🧘' },
-];
 
 const PACE_TYPES = new Set(['Run', 'TrailRun', 'Walk', 'Hike', 'VirtualRun', 'RaceWalk']);
 
@@ -29,10 +17,16 @@ const ACTIVITY_ICONS: Record<string, string> = {
   Elliptical: '⚙️', StairStepper: '🪜', Rowing: '🚣', Kayaking: '🛶',
 };
 
-const CLUSTER_LABELS: Record<string, { label: string; bg: string; text: string }> = {
-  leve:     { label: 'Easy',     bg: 'rgba(34,197,94,0.12)',  text: '#22c55e' },
-  moderado: { label: 'Moderate', bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
-  intenso:  { label: 'Hard',     bg: 'rgba(239,68,68,0.12)',  text: '#ef4444' },
+const CLUSTER_COLORS: Record<string, { bg: string; text: string }> = {
+  leve:     { bg: 'rgba(34,197,94,0.12)',  text: '#22c55e' },
+  moderado: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
+  intenso:  { bg: 'rgba(239,68,68,0.12)',  text: '#ef4444' },
+};
+
+const ACTIVITY_TYPE_VALUES = ['', 'Run', 'TrailRun', 'Walk', 'Hike', 'Ride', 'Swim', 'WeightTraining', 'Workout', 'Yoga'];
+const ACTIVITY_TYPE_EMOJIS: Record<string, string> = {
+  '': '📋', Run: '🏃', TrailRun: '⛰️', Walk: '🚶', Hike: '🥾',
+  Ride: '🚴', Swim: '🏊', WeightTraining: '🏋️', Workout: '💪', Yoga: '🧘',
 };
 
 function Pagination({ page, hasMore, onPage }: { page: number; hasMore: boolean; onPage: (p: number) => void }) {
@@ -92,6 +86,7 @@ function Pagination({ page, hasMore, onPage }: { page: number; hasMore: boolean;
 }
 
 export default function OperationalDashboard() {
+  const t = useT();
   const navigate = useNavigate();
   const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
   const [page, setPage] = useState(0);
@@ -124,13 +119,26 @@ export default function OperationalDashboard() {
   const handleTypeChange = (v: string) => { setActivityType(v); setPage(0); };
   const handleSearch = (v: string) => { setSearch(v); setPage(0); };
 
+  const tableHeaders = [
+    t.operational.columns.date,
+    t.operational.columns.name,
+    t.operational.columns.type,
+    t.operational.columns.distance,
+    t.operational.columns.duration,
+    t.operational.columns.pace,
+    t.operational.columns.hr,
+    t.operational.columns.intensity,
+    '',
+  ];
+
+  const resultCount = filtered.length;
+  const resultWord = resultCount === 1 ? t.common.result : t.common.results;
+
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold" style={{ color: 'var(--c-ink)' }}>Operational Dashboard</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--c-ink3)' }}>
-          Full activity history · click any row to see details
-        </p>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--c-ink)' }}>{t.operational.title}</h1>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--c-ink3)' }}>{t.operational.subtitle}</p>
       </div>
 
       {/* Filters */}
@@ -141,7 +149,7 @@ export default function OperationalDashboard() {
           </svg>
           <input
             type="text"
-            placeholder="Search activities…"
+            placeholder={t.operational.searchPlaceholder}
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             className="input-field pl-8 w-48"
@@ -149,13 +157,13 @@ export default function OperationalDashboard() {
         </div>
         <div className="w-px h-6" style={{ backgroundColor: 'var(--c-subtle)' }} />
         <div className="flex flex-wrap gap-1.5">
-          {ACTIVITY_TYPES.map((t) => (
+          {ACTIVITY_TYPE_VALUES.map((value) => (
             <button
-              key={t.value}
-              onClick={() => handleTypeChange(t.value)}
-              className={activityType === t.value ? 'pill-active' : 'pill-inactive'}
+              key={value}
+              onClick={() => handleTypeChange(value)}
+              className={activityType === value ? 'pill-active' : 'pill-inactive'}
             >
-              {t.emoji} {t.label}
+              {ACTIVITY_TYPE_EMOJIS[value]} {t.operational.activityTypeLabels[value] ?? value}
             </button>
           ))}
         </div>
@@ -168,7 +176,7 @@ export default function OperationalDashboard() {
             <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-            Clear
+            {t.common.clear}
           </button>
         )}
       </div>
@@ -176,10 +184,10 @@ export default function OperationalDashboard() {
       {/* Table */}
       <div className="card overflow-hidden">
         <div className="card-header">
-          <h2 className="card-title">Recent Activities</h2>
+          <h2 className="card-title">{t.operational.recentActivities}</h2>
           {!isLoading && (
             <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>
-              {filtered.length} result{filtered.length !== 1 ? 's' : ''} on this page
+              {resultCount} {resultWord} {t.common.onThisPage}
             </span>
           )}
         </div>
@@ -195,7 +203,7 @@ export default function OperationalDashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ backgroundColor: 'var(--c-card)', borderBottom: '1px solid var(--c-border)' }}>
-                  {['Date', 'Name', 'Type', 'Distance', 'Duration', 'Pace', 'Avg HR', 'Intensity', ''].map((h, i) => (
+                  {tableHeaders.map((h, i) => (
                     <th
                       key={i}
                       className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-widest ${
@@ -214,28 +222,30 @@ export default function OperationalDashboard() {
                     <td colSpan={9} className="px-5 py-12 text-center text-sm" style={{ color: 'var(--c-ink3)' }}>
                       <div className="space-y-2">
                         <div className="text-2xl">🔍</div>
-                        <div>No activities found</div>
+                        <div>{t.operational.noResults}</div>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   filtered.map((act) => {
                     const hasPace = act.activity_type != null && PACE_TYPES.has(act.activity_type);
-                    const cluster = act.cluster_label ? CLUSTER_LABELS[act.cluster_label] : null;
+                    const clusterKey = act.cluster_label ?? '';
+                    const clusterColors = CLUSTER_COLORS[clusterKey];
+                    const clusterLabel = clusterKey ? (t.operational.clusterLabels[clusterKey] ?? clusterKey) : null;
                     return (
                       <tr
                         key={act.activity_id}
                         onClick={() => navigate(`/activities/${act.activity_id}`)}
                         className="cursor-pointer transition-colors group"
                         style={{ borderBottom: '1px solid var(--c-border)' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--c-subtle)'; (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--c-subtle)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
                       >
                         <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: 'var(--c-ink3)' }}>
                           {act.start_date?.slice(0, 10) ?? '—'}
                         </td>
                         <td className="px-4 py-3 max-w-[200px]">
-                          <span className="font-medium truncate block transition-colors" style={{ color: 'var(--c-ink)' }}>
+                          <span className="font-medium truncate block" style={{ color: 'var(--c-ink)' }}>
                             {act.strava_name ?? '—'}
                           </span>
                         </td>
@@ -258,15 +268,14 @@ export default function OperationalDashboard() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           {act.avg_heartrate
-                            ? <span style={{ color: 'var(--c-ink)' }}>{act.avg_heartrate.toFixed(0)} <span style={{ color: 'var(--c-ink3)', fontSize: '11px' }}>bpm</span></span>
+                            ? <span style={{ color: 'var(--c-ink)' }}>{act.avg_heartrate.toFixed(0)} <span style={{ color: 'var(--c-ink3)', fontSize: '11px' }}>{t.common.bpm}</span></span>
                             : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
                         </td>
                         <td className="px-4 py-3 text-center">
-                          {cluster
-                            ? <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: cluster.bg, color: cluster.text }}>{cluster.label}</span>
+                          {clusterColors && clusterLabel
+                            ? <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: clusterColors.bg, color: clusterColors.text }}>{clusterLabel}</span>
                             : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
                         </td>
-                        {/* Arrow indicator */}
                         <td className="px-3 py-3">
                           <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--c-ink3)' }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <polyline points="9 18 15 12 9 6" />
@@ -282,7 +291,7 @@ export default function OperationalDashboard() {
         )}
 
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: '1px solid var(--c-border)', backgroundColor: 'var(--c-card)' }}>
-          <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>Page {page + 1}</span>
+          <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>{t.common.page} {page + 1}</span>
           <Pagination page={page} hasMore={hasMore} onPage={(p) => setPage(p)} />
         </div>
       </div>

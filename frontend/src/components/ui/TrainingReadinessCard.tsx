@@ -1,4 +1,5 @@
 import type { TrainingReadiness } from '../../types';
+import { useT } from '../../hooks/useTranslation';
 
 interface Props {
   data: TrainingReadiness;
@@ -6,6 +7,8 @@ interface Props {
 
 /* ── Gauge bar ─────────────────────────────────────────── */
 function TSBGauge({ tsb }: { tsb: number }) {
+  const t = useT();
+  const r = t.readiness;
   const MIN = -20, MAX = 20;
   const pct = Math.max(0, Math.min(100, ((tsb - MIN) / (MAX - MIN)) * 100));
 
@@ -32,11 +35,11 @@ function TSBGauge({ tsb }: { tsb: number }) {
         />
       </div>
       <div className="flex justify-between text-[9px] font-medium uppercase tracking-wider" style={{ color: 'var(--c-ink3)' }}>
-        <span>Exhausted</span>
-        <span>Tired</span>
-        <span>Moderate</span>
-        <span>Fresh</span>
-        <span>Peak</span>
+        <span>{r.exhausted}</span>
+        <span>{r.tired}</span>
+        <span>{r.moderate}</span>
+        <span>{r.fresh}</span>
+        <span>{r.peak}</span>
       </div>
     </div>
   );
@@ -80,16 +83,25 @@ function MetricCell({
 
 /* ── Main card ─────────────────────────────────────────── */
 export function TrainingReadinessCard({ data }: Props) {
+  const t = useT();
+  const r = t.readiness;
   const tsbSign = data.tsb > 0 ? '+' : '';
 
   const rampStatus =
     data.atl > data.ctl + 15
-      ? { label: 'High ramp ⚠️', color: '#ef4444' }
+      ? { label: r.highRamp,     color: '#ef4444' }
       : data.atl > data.ctl + 5
-      ? { label: 'Moderate ramp', color: '#f59e0b' }
+      ? { label: r.moderateRamp, color: '#f59e0b' }
       : data.ctl > data.atl + 10
-      ? { label: 'Detrained', color: '#6b7280' }
-      : { label: 'Balanced', color: '#22c55e' };
+      ? { label: r.detrained,    color: '#6b7280' }
+      : { label: r.balanced,     color: '#22c55e' };
+
+  const restSub =
+    data.days_since_last === 0
+      ? r.trainedToday
+      : data.days_since_last === 1
+      ? r.sinceLastActivity
+      : r.daysWithoutTraining;
 
   return (
     <div
@@ -116,7 +128,7 @@ export function TrainingReadinessCard({ data }: Props) {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--c-ink3)' }}>
-                Today's Readiness
+                {r.title}
               </p>
               <p className="text-sm font-bold leading-tight" style={{ color: data.readiness_color }}>
                 {data.readiness_title}
@@ -128,45 +140,39 @@ export function TrainingReadinessCard({ data }: Props) {
           <div className="grid grid-cols-2 gap-2">
             <MetricCell
               icon="💪"
-              label="Fitness (CTL)"
+              label={r.fitnessCtl}
               value={data.ctl.toFixed(0)}
               sub="42-day avg TRIMP"
               accent="var(--c-ink)"
             />
             <MetricCell
               icon="🔥"
-              label="Fatigue (ATL)"
+              label={r.fatigueAtl}
               value={data.atl.toFixed(0)}
               sub="7-day avg TRIMP"
               accent={data.atl > data.ctl ? '#ef4444' : 'var(--c-ink)'}
             />
             <MetricCell
               icon="📅"
-              label="This Week"
+              label={r.thisWeek}
               value={data.weekly_trimp.toFixed(0)}
               sub="TRIMP load"
             />
             <MetricCell
               icon="😴"
-              label="Rest Days"
+              label={r.restDays}
               value={data.days_since_last != null ? String(data.days_since_last) : '—'}
-              sub={
-                data.days_since_last === 0
-                  ? 'trained today'
-                  : data.days_since_last === 1
-                  ? 'since last activity'
-                  : 'days without training'
-              }
+              sub={restSub}
             />
             <MetricCell
               icon="📆"
-              label="Monthly"
+              label={r.monthly}
               value={data.monthly_trimp.toFixed(0)}
               sub="28-day TRIMP"
             />
             <MetricCell
               icon="⚖️"
-              label="Load Ramp"
+              label={r.loadRamp}
               value={rampStatus.label}
               sub={`ATL ${data.atl > data.ctl ? '>' : '≤'} CTL`}
               accent={rampStatus.color}
@@ -182,7 +188,7 @@ export function TrainingReadinessCard({ data }: Props) {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--c-ink3)' }}>
-                  Training Stress Balance
+                  {r.tsb}
                 </p>
                 <p
                   className="text-5xl font-black leading-tight"
@@ -216,7 +222,7 @@ export function TrainingReadinessCard({ data }: Props) {
 
           {/* Footnote */}
           <p className="text-[10px] leading-relaxed" style={{ color: 'var(--c-ink3)' }}>
-            Banister Impulse-Response model (1991) · ATL τ=7d · CTL τ=42d · TRIMP = HR × duration
+            {r.footnote}
           </p>
         </div>
       </div>
