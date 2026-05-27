@@ -12,14 +12,14 @@ const ACTIVITY_ICONS: Record<string, string> = {
 };
 
 const DISTANCE_COLORS: Record<string, string> = {
-  '5km': 'from-orange-500/10 to-orange-500/5 border-orange-500/20',
+  '5km':  'from-orange-500/10 to-orange-500/5 border-orange-500/20',
   '10km': 'from-blue-500/10 to-blue-500/5 border-blue-500/20',
   '21km': 'from-purple-500/10 to-purple-500/5 border-purple-500/20',
   '42km': 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
 };
 
 const DISTANCE_ACCENT: Record<string, string> = {
-  '5km': 'text-orange-400',
+  '5km':  'text-orange-400',
   '10km': 'text-blue-400',
   '21km': 'text-purple-400',
   '42km': 'text-emerald-400',
@@ -34,6 +34,8 @@ function formatTime(sec: number | null): string {
   return `${m}m ${String(s).padStart(2, '0')}s`;
 }
 
+const PACE_TYPES = new Set(['Run', 'TrailRun', 'Walk', 'Hike', 'VirtualRun', 'RaceWalk']);
+
 export default function StrategicDashboard() {
   const params = useFiltersStore(useShallow((s) => s.toQueryParams()));
 
@@ -45,18 +47,20 @@ export default function StrategicDashboard() {
   const { data: bestTimes, isLoading: loadingBestTimes } = useBestTimes();
   const { data: lastActivity } = useLastActivity();
 
+  const hasPaceLast = lastActivity?.activity_type ? PACE_TYPES.has(lastActivity.activity_type) : false;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-c-ink">Dashboard Estratégico</h1>
-        <p className="text-sm text-c-ink3 mt-0.5">Visão geral da performance ao longo do tempo</p>
+        <h1 className="text-xl font-bold text-c-ink">Strategic Dashboard</h1>
+        <p className="text-sm text-c-ink3 mt-0.5">Performance overview over time</p>
       </div>
 
       {/* KPIs */}
       {loadingKPIs ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {Array.from({ length: 7 }).map((_, i) => (
             <div key={i} className="h-24 rounded-xl bg-c-raised animate-pulse" />
           ))}
         </div>
@@ -69,8 +73,8 @@ export default function StrategicDashboard() {
         {/* Best times — 2/3 width */}
         <div className="lg:col-span-2 card">
           <div className="card-header">
-            <h2 className="card-title">Melhores Tempos</h2>
-            <span className="text-xs text-c-ink3">Em atividades de corrida</span>
+            <h2 className="card-title">Best Times</h2>
+            <span className="text-xs text-c-ink3">Running activities only</span>
           </div>
           <div className="p-5">
             {loadingBestTimes ? (
@@ -95,13 +99,13 @@ export default function StrategicDashboard() {
                       <p className="text-[10px] text-c-ink3 pt-1">{e.activity_date}</p>
                     )}
                     {!e.best_pace_sec_km && (
-                      <p className="text-xs text-c-ink3 italic">Sem dados</p>
+                      <p className="text-xs text-c-ink3 italic">No data</p>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-c-ink3 text-sm">Sem dados disponíveis</p>
+              <p className="text-c-ink3 text-sm">No data available</p>
             )}
           </div>
         </div>
@@ -109,7 +113,7 @@ export default function StrategicDashboard() {
         {/* Last activity — 1/3 width */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Última Atividade</h2>
+            <h2 className="card-title">Last Activity</h2>
           </div>
           <div className="p-5">
             {lastActivity ? (
@@ -120,7 +124,7 @@ export default function StrategicDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-c-ink text-sm leading-tight truncate">
-                      {lastActivity.strava_name ?? 'Atividade'}
+                      {lastActivity.strava_name ?? 'Activity'}
                     </p>
                     <p className="text-xs text-c-ink3 mt-0.5">
                       {lastActivity.start_date?.slice(0, 10)} · {lastActivity.activity_type}
@@ -130,12 +134,12 @@ export default function StrategicDashboard() {
 
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Distância', value: formatDistance(lastActivity.distance_km) },
-                    { label: 'Duração',   value: formatDuration(lastActivity.moving_time_sec) },
-                    { label: 'Pace',      value: lastActivity.avg_pace_sec_km ? formatPace(lastActivity.avg_pace_sec_km) : '—' },
-                    { label: 'FC Média',  value: lastActivity.avg_heartrate ? `${lastActivity.avg_heartrate.toFixed(0)} bpm` : '—' },
+                    { label: 'Distance', value: formatDistance(lastActivity.distance_km) },
+                    { label: 'Duration',  value: formatDuration(lastActivity.moving_time_sec) },
+                    { label: 'Pace',      value: hasPaceLast && lastActivity.avg_pace_sec_km ? formatPace(lastActivity.avg_pace_sec_km) : '—' },
+                    { label: 'Avg HR',    value: lastActivity.avg_heartrate ? `${lastActivity.avg_heartrate.toFixed(0)} bpm` : '—' },
                   ].map(({ label, value }) => (
-                    <div                   key={label} className="bg-c-page rounded-lg px-3 py-2">
+                    <div key={label} className="bg-c-page rounded-lg px-3 py-2">
                       <p className="text-[10px] text-c-ink3 uppercase tracking-wide">{label}</p>
                       <p className="text-sm font-semibold text-c-ink mt-0.5">{value}</p>
                     </div>
@@ -144,7 +148,7 @@ export default function StrategicDashboard() {
               </div>
             ) : (
               <div className="h-32 flex items-center justify-center text-c-ink3 text-sm">
-                Sem atividades
+                No activities yet
               </div>
             )}
           </div>
@@ -154,10 +158,10 @@ export default function StrategicDashboard() {
       {/* Pace chart */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Evolução do Pace — Corridas</h2>
+          <h2 className="card-title">Pace Progression — Runs</h2>
           <span className="flex items-center gap-1.5 text-xs text-c-ink3">
             <span className="w-2 h-2 rounded-full bg-strava-orange inline-block" />
-            Apenas corridas (Run) · máx 15 min/km
+            Runs only · max 15 min/km
           </span>
         </div>
         <div className="p-5">
@@ -166,7 +170,7 @@ export default function StrategicDashboard() {
           ) : timeline ? (
             <PaceProgressionChart data={timeline} />
           ) : (
-            <p className="text-c-ink3 text-sm py-8 text-center">Sem dados de corrida disponíveis</p>
+            <p className="text-c-ink3 text-sm py-8 text-center">No running data available</p>
           )}
         </div>
       </div>

@@ -14,9 +14,9 @@ const ACTIVITY_ICONS: Record<string, string> = {
 };
 
 const CLUSTER_META: Record<string, { label: string; color: string; bg: string; desc: string }> = {
-  leve:     { label: 'Easy',     color: '#22c55e', bg: 'rgba(34,197,94,0.12)',    desc: 'Low intensity — aerobic base, recovery' },
-  moderado: { label: 'Moderate', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',   desc: 'Threshold zone — aerobic development' },
-  intenso:  { label: 'Hard',     color: '#ef4444', bg: 'rgba(239,68,68,0.12)',    desc: 'High intensity — VO2max, race pace' },
+  leve:     { label: 'Easy',     color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   desc: 'Low intensity — aerobic base, recovery run' },
+  moderado: { label: 'Moderate', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', desc: 'Threshold zone — tempo and base building' },
+  intenso:  { label: 'Hard',     color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  desc: 'High intensity — VO₂max, long runs, trails' },
 };
 
 const HR_ZONES = [
@@ -170,7 +170,7 @@ export default function ActivityDetailPage() {
             <StatCard
               label="Avg pace"
               value={hasPace && detail.avg_pace_sec_km ? formatPace(detail.avg_pace_sec_km) : '—'}
-              sub={hasPace ? 'min/km' : 'N/A for this type'}
+              sub={hasPace ? 'min/km' : 'not applicable'}
             />
             <StatCard
               label="Best pace"
@@ -184,7 +184,7 @@ export default function ActivityDetailPage() {
             <StatCard
               label="TRIMP load"
               value={detail.training_load ? `${Math.round(detail.training_load)}` : '—'}
-              sub="Training impulse"
+              sub="training impulse"
             />
             <StatCard label="Elapsed time"    value={formatDuration(detail.elapsed_time_sec)} />
           </div>

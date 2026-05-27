@@ -19,21 +19,19 @@ export default function TacticalDashboard() {
   const { data: hrZones, isLoading: loadingHR } = useHRZones(params);
   const { data: timeline, isLoading: loadingTimeline } = useTimeline(params);
 
-  // Build weekly volume data from timeline
   const weeklyData = useMemo(() => {
     if (!timeline) return [];
-    const byWeek: Record<string, { week: string; km: number; minutes: number; count: number }> = {};
+    const byWeek: Record<string, { week: string; km: number; count: number }> = {};
     timeline.forEach((p) => {
       if (!p.date) return;
       const w = isoWeek(p.date);
-      if (!byWeek[w]) byWeek[w] = { week: w.slice(5), km: 0, minutes: 0, count: 0 };
+      if (!byWeek[w]) byWeek[w] = { week: w.slice(5), km: 0, count: 0 };
       byWeek[w].km += p.distance_km ?? 0;
       byWeek[w].count += 1;
     });
-    return Object.values(byWeek).slice(-16); // last 16 weeks
+    return Object.values(byWeek).slice(-16);
   }, [timeline]);
 
-  // HR zone ring chart data
   const hrRingData = hrZones
     ? [
         { name: 'Z1', value: hrZones.zone_1_pct, fill: '#22c55e' },
@@ -44,28 +42,33 @@ export default function TacticalDashboard() {
       ].filter((d) => d.value > 0)
     : [];
 
+  const HR_ZONES_INFO = [
+    { label: 'Zone 1 — Active recovery', pct: hrZones?.zone_1_pct ?? 0, color: '#22c55e' },
+    { label: 'Zone 2 — Aerobic base',    pct: hrZones?.zone_2_pct ?? 0, color: '#84cc16' },
+    { label: 'Zone 3 — Moderate aerobic',pct: hrZones?.zone_3_pct ?? 0, color: '#f59e0b' },
+    { label: 'Zone 4 — Lactate threshold',pct: hrZones?.zone_4_pct ?? 0, color: '#f97316' },
+    { label: 'Zone 5 — VO₂ Max',         pct: hrZones?.zone_5_pct ?? 0, color: '#ef4444' },
+  ];
+
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-c-ink">Dashboard Tático</h1>
-        <p className="text-sm text-c-ink3 mt-0.5">Carga de treino, zonas cardíacas e volume semanal</p>
+        <h1 className="text-xl font-bold text-c-ink">Tactical Dashboard</h1>
+        <p className="text-sm text-c-ink3 mt-0.5">Training load, heart rate zones and weekly volume</p>
       </div>
 
-      {/* Top row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* HR Zones */}
+        {/* HR Zone donut */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Distribuição de Zonas Cardíacas</h2>
-            <span className="text-xs text-c-ink3">% do tempo por zona</span>
+            <h2 className="card-title">Heart Rate Zone Distribution</h2>
+            <span className="text-xs text-c-ink3">% of time per zone</span>
           </div>
           <div className="p-5">
             {loadingHR ? (
               <div className="h-56 bg-c-subtle animate-pulse rounded-lg" />
             ) : hrZones ? (
               <div className="flex gap-6 items-center">
-                {/* Donut */}
                 <div className="flex-1">
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
@@ -91,7 +94,6 @@ export default function TacticalDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                {/* Legend */}
                 <div className="space-y-2 shrink-0">
                   {hrRingData.map((z) => (
                     <div key={z.name} className="flex items-center gap-2">
@@ -103,28 +105,22 @@ export default function TacticalDashboard() {
                 </div>
               </div>
             ) : (
-              <p className="text-c-ink3 text-sm py-8 text-center">Sem dados de FC disponíveis</p>
+              <p className="text-c-ink3 text-sm py-8 text-center">No heart rate data available</p>
             )}
           </div>
         </div>
 
-        {/* Zone intensity summary */}
+        {/* Intensity profile bars */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Perfil de Intensidade</h2>
+            <h2 className="card-title">Intensity Profile</h2>
           </div>
           <div className="p-5">
             {loadingHR ? (
               <div className="h-56 bg-c-subtle animate-pulse rounded-lg" />
             ) : hrZones ? (
               <div className="space-y-3 pt-2">
-                {[
-                  { label: 'Zona 1 — Recuperação ativo', pct: hrZones.zone_1_pct, color: '#22c55e' },
-                  { label: 'Zona 2 — Base aeróbica', pct: hrZones.zone_2_pct, color: '#84cc16' },
-                  { label: 'Zona 3 — Aeróbico moderado', pct: hrZones.zone_3_pct, color: '#f59e0b' },
-                  { label: 'Zona 4 — Limiar anaeróbico', pct: hrZones.zone_4_pct, color: '#f97316' },
-                  { label: 'Zona 5 — VO₂ Máx', pct: hrZones.zone_5_pct, color: '#ef4444' },
-                ].map((z) => (
+                {HR_ZONES_INFO.map((z) => (
                   <div key={z.label} className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-c-ink2">{z.label}</span>
@@ -140,17 +136,17 @@ export default function TacticalDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-c-ink3 text-sm py-8 text-center">Sem dados disponíveis</p>
+              <p className="text-c-ink3 text-sm py-8 text-center">No data available</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Weekly volume chart */}
+      {/* Weekly volume */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Volume Semanal (km)</h2>
-          <span className="text-xs text-c-ink3">Últimas 16 semanas</span>
+          <h2 className="card-title">Weekly Volume (km)</h2>
+          <span className="text-xs text-c-ink3">Last 16 weeks</span>
         </div>
         <div className="p-5">
           {loadingTimeline ? (
@@ -163,7 +159,7 @@ export default function TacticalDashboard() {
                 <YAxis tick={{ fontSize: 10, fill: 'var(--c-ink3)' }} tickFormatter={(v) => `${v}km`} width={40} />
                 <Tooltip
                   formatter={(v) => [`${(Number(v)).toFixed(1)} km`, 'Volume']}
-                  labelFormatter={(l) => `Semana ${l}`}
+                  labelFormatter={(l) => `Week ${l}`}
                   contentStyle={{ background: 'var(--c-tooltip)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: 'var(--c-ink)' }}
                 />
@@ -171,7 +167,7 @@ export default function TacticalDashboard() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-c-ink3 text-sm py-8 text-center">Sem dados de volume disponíveis</p>
+            <p className="text-c-ink3 text-sm py-8 text-center">No volume data available</p>
           )}
         </div>
       </div>

@@ -29,9 +29,9 @@ interface Props {
 
 export function KPIStrip({ kpis }: Props) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
       <KPICard
-        label="Distância"
+        label="Distance"
         value={`${kpis.total_distance_km.toFixed(0)} km`}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -40,7 +40,7 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Atividades"
+        label="Activities"
         value={String(kpis.total_activities)}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -49,9 +49,9 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Pace Médio"
+        label="Avg Pace"
         value={formatPace(kpis.avg_pace_sec_km)}
-        sub="por km (corrida)"
+        sub="per km (running)"
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
@@ -59,9 +59,9 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="Melhor Pace"
+        label="Best Pace"
         value={formatPace(kpis.best_pace_sec_km)}
-        sub="por km"
+        sub="per km"
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -69,7 +69,7 @@ export function KPIStrip({ kpis }: Props) {
         }
       />
       <KPICard
-        label="FC Média"
+        label="Avg HR"
         value={kpis.avg_heartrate ? `${kpis.avg_heartrate.toFixed(0)} bpm` : '—'}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ export function KPIStrip({ kpis }: Props) {
         accent="text-red-400"
       />
       <KPICard
-        label="Elevação"
+        label="Elevation"
         value={`${kpis.total_elevation_m.toFixed(0)} m`}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -87,6 +87,18 @@ export function KPIStrip({ kpis }: Props) {
           </svg>
         }
         accent="text-emerald-400"
+      />
+      <KPICard
+        label="Calories"
+        value={kpis.total_calories > 0 ? `${(kpis.total_calories / 1000).toFixed(1)}k` : '—'}
+        sub="kcal total"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+          </svg>
+        }
+        accent="text-amber-400"
       />
     </div>
   );

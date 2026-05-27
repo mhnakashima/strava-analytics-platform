@@ -15,10 +15,10 @@ export function TrainingClustersScatter({ data }: Props) {
         <CartesianGrid strokeDasharray="3 3" stroke="var(--c-grid)" />
         <XAxis
           dataKey="distance_km"
-          name="Distância"
+          name="Distance"
           unit=" km"
           tick={{ fontSize: 11, fill: 'var(--c-ink3)' }}
-          label={{ value: 'Distância (km)', position: 'insideBottom', offset: -4, fill: 'var(--c-ink3)', fontSize: 11 }}
+          label={{ value: 'Distance (km)', position: 'insideBottom', offset: -4, fill: 'var(--c-ink3)', fontSize: 11 }}
         />
         <YAxis
           dataKey="avg_pace_sec_km"
@@ -34,7 +34,7 @@ export function TrainingClustersScatter({ data }: Props) {
           labelStyle={{ color: 'var(--c-ink)' }}
           formatter={(value, name) => {
             const n = Number(value);
-            if (name === 'Pace') return [formatPace(n), name as string];
+            if (name === 'Pace' || name === 'Distance') return [name === 'Pace' ? formatPace(n) : `${n} km`, name as string];
             return [`${n}`, name as string];
           }}
         />

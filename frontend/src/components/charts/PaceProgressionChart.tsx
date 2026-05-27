@@ -38,7 +38,7 @@ export function PaceProgressionChart({ data }: Props) {
       {/* Year filter pills */}
       <div className="flex items-center gap-2 flex-wrap">
         <button onClick={() => setSelectedYear(null)} className={selectedYear === null ? 'pill-active' : 'pill-inactive'}>
-          Todos
+          All
         </button>
         {years.map((y) => (
           <button key={y} onClick={() => setSelectedYear(y)} className={selectedYear === y ? 'pill-active' : 'pill-inactive'}>
@@ -47,14 +47,14 @@ export function PaceProgressionChart({ data }: Props) {
         ))}
         {avgPace && (
           <span className="ml-auto text-xs text-c-ink3">
-            Média: <span className="text-strava-orange font-semibold">{formatPace(avgPace)}</span> /km
+            Avg: <span className="text-strava-orange font-semibold">{formatPace(avgPace)}</span> /km
           </span>
         )}
       </div>
 
       {chartData.length === 0 ? (
         <div className="h-56 flex items-center justify-center text-c-ink3 text-sm">
-          Nenhuma corrida encontrada para este período
+          No runs found for this period
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={240}>
