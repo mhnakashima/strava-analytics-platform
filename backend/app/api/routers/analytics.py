@@ -16,9 +16,11 @@ from app.schemas.analytics import (
     ComparisonReport,
     ConsistencyReport,
     HRZoneDistribution,
+    MonthlyPoint,
     TrainingProfile,
     TrainingReadiness,
     TrendPoint,
+    YearlyStat,
 )
 from app.schemas.activity import ActivitySummary
 
@@ -234,3 +236,22 @@ def get_training_profile(
         intenso_pct=round(intenso, 1),
         dominant_cluster=dominant,
     )
+
+
+@router.get("/yearly", response_model=list[YearlyStat], summary="Per-year training aggregates")
+def get_yearly_stats(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    repo = ActivityRepository(db)
+    return [YearlyStat(**s) for s in repo.get_yearly_stats(athlete_id)]
+
+
+@router.get("/monthly", response_model=list[MonthlyPoint], summary="Per-month distance breakdown")
+def get_monthly_breakdown(
+    athlete_id: int = Depends(get_current_athlete_id),
+    db: Session = Depends(get_db),
+):
+    repo = ActivityRepository(db)
+    return [MonthlyPoint(**p) for p in repo.get_monthly_breakdown(athlete_id)]
+

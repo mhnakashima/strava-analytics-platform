@@ -83,6 +83,27 @@ class ClusterTrendPoint(BaseModel):
     hard: int
 
 
+class YearlyStat(BaseModel):
+    year: int
+    total_distance_km: float
+    total_activities: int
+    avg_pace_sec_km: Optional[float]
+    total_calories: float
+    avg_training_load: Optional[float]
+    total_elevation_m: float
+    run_count: int
+    ride_count: int
+    other_count: int
+
+
+class MonthlyPoint(BaseModel):
+    year: int
+    month: int
+    month_label: str
+    distance_km: float
+    activities: int
+
+
 class TrainingReadiness(BaseModel):
     """
     Banister Impulse-Response model output.

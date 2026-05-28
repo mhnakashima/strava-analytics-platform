@@ -36,11 +36,14 @@ function ClusterStatsTable({ stats }: { stats: ClusterStat[] }) {
   ];
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto -mx-1">
+      <table className="w-full text-sm min-w-[320px]">
         <thead>
           <tr style={{ borderBottom: '1px solid var(--c-border)' }}>
-            <th className="text-left py-2 pr-4 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-ink3)' }}>
+            <th
+              className="text-left py-2 pr-4 text-xs font-semibold uppercase tracking-widest sticky left-0 z-10"
+              style={{ color: 'var(--c-ink3)', backgroundColor: 'var(--c-card)' }}
+            >
               {/* metric col header intentionally blank */}
             </th>
             {stats.map((s) => {
@@ -67,7 +70,13 @@ function ClusterStatsTable({ stats }: { stats: ClusterStat[] }) {
                 backgroundColor: i % 2 === 0 ? 'transparent' : 'var(--c-raised)',
               }}
             >
-              <td className="py-2.5 pr-4 text-xs font-medium" style={{ color: 'var(--c-ink3)' }}>
+              <td
+                className="py-2.5 pr-4 text-xs font-medium sticky left-0 z-10"
+                style={{
+                  color: 'var(--c-ink3)',
+                  backgroundColor: i % 2 === 0 ? 'var(--c-card)' : 'var(--c-raised)',
+                }}
+              >
                 {row.label}
               </td>
               {stats.map((s) => (

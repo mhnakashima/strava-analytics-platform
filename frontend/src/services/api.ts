@@ -46,6 +46,8 @@ export const analyticsApi = {
   clusterStats: () => apiClient.get('/analytics/cluster-stats').then((r) => r.data),
   clusterTrend: () => apiClient.get('/analytics/cluster-trend').then((r) => r.data),
   trainingReadiness: () => apiClient.get('/analytics/training-readiness').then((r) => r.data),
+  yearlyStats: () => apiClient.get('/analytics/yearly').then((r) => r.data),
+  monthlyBreakdown: () => apiClient.get('/analytics/monthly').then((r) => r.data),
 };
 
 // ── ML ────────────────────────────────────────────────────────

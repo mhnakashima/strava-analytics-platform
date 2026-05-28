@@ -132,3 +132,24 @@ export interface AuthState {
   firstname: string | null;
   lastname: string | null;
 }
+
+export interface YearlyStat {
+  year: number;
+  total_distance_km: number;
+  total_activities: number;
+  avg_pace_sec_km: number | null;
+  total_calories: number;
+  avg_training_load: number | null;
+  total_elevation_m: number;
+  run_count: number;
+  ride_count: number;
+  other_count: number;
+}
+
+export interface MonthlyPoint {
+  year: number;
+  month: number;
+  month_label: string;
+  distance_km: number;
+  activities: number;
+}

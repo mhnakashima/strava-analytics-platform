@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { activitiesApi, analyticsApi } from '../services/api';
-import type { Activity, ActivityKPIs, BestTimes, ClusterPoint, ClusterStat, ClusterTrendPoint, HRZoneDistribution, TimelinePoint, TrainingProfile, TrainingReadiness } from '../types';
+import type { Activity, ActivityKPIs, BestTimes, ClusterPoint, ClusterStat, ClusterTrendPoint, HRZoneDistribution, MonthlyPoint, TimelinePoint, TrainingProfile, TrainingReadiness, YearlyStat } from '../types';
 
 export function useActivities(params?: Record<string, unknown>) {
   return useQuery<Activity[]>({
@@ -87,5 +87,21 @@ export function useTrainingReadiness() {
     queryKey: ['training-readiness'],
     queryFn: analyticsApi.trainingReadiness,
     staleTime: 60 * 60 * 1000, // 1 hour — changes daily
+  });
+}
+
+export function useYearlyStats() {
+  return useQuery<YearlyStat[]>({
+    queryKey: ['yearly-stats'],
+    queryFn: analyticsApi.yearlyStats,
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function useMonthlyBreakdown() {
+  return useQuery<MonthlyPoint[]>({
+    queryKey: ['monthly-breakdown'],
+    queryFn: analyticsApi.monthlyBreakdown,
+    staleTime: 60 * 60 * 1000,
   });
 }

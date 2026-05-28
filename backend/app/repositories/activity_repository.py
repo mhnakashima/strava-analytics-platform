@@ -374,3 +374,110 @@ class ActivityRepository:
             "readiness_color": color,
             "readiness_icon": icon,
         }
+
+    # ──────────────────────────────────────────────────────────────
+    # Year-over-Year analytics
+    # ──────────────────────────────────────────────────────────────
+
+    def get_yearly_stats(self, athlete_id: int) -> list[dict]:
+        """Aggregate training metrics per calendar year."""
+        rows = (
+            self.db.query(FactActivity)
+            .filter(
+                FactActivity.athlete_id == athlete_id,
+                FactActivity.start_date.isnot(None),
+            )
+            .all()
+        )
+
+        by_year: dict[int, dict] = {}
+        for r in rows:
+            if not r.start_date:
+                continue
+            year = r.start_date.year
+            if year not in by_year:
+                by_year[year] = {
+                    'dist': 0.0, 'acts': 0,
+                    'pace_vals': [], 'cals': 0.0,
+                    'load_vals': [], 'elev': 0.0,
+                    'runs': 0, 'rides': 0, 'other': 0,
+                }
+            y = by_year[year]
+            y['dist'] += (r.distance_meters or 0) / 1000
+            y['acts'] += 1
+            if r.avg_pace_sec_km:
+                y['pace_vals'].append(r.avg_pace_sec_km)
+            cal = (
+                r.calories if (r.calories and r.calories > 0)
+                else _est_calories(r.activity_type, r.moving_time_sec)
+            )
+            y['cals'] += cal
+            if r.training_load:
+                y['load_vals'].append(r.training_load)
+            y['elev'] += r.elevation_gain_m or 0
+            atype = r.activity_type or ''
+            if atype in ('Run', 'TrailRun', 'VirtualRun'):
+                y['runs'] += 1
+            elif atype in ('Ride', 'VirtualRide'):
+                y['rides'] += 1
+            else:
+                y['other'] += 1
+
+        result = []
+        for year in sorted(by_year):
+            d = by_year[year]
+            result.append({
+                'year': year,
+                'total_distance_km': round(d['dist'], 1),
+                'total_activities': d['acts'],
+                'avg_pace_sec_km': (
+                    round(sum(d['pace_vals']) / len(d['pace_vals']))
+                    if d['pace_vals'] else None
+                ),
+                'total_calories': round(d['cals']),
+                'avg_training_load': (
+                    round(sum(d['load_vals']) / len(d['load_vals']), 1)
+                    if d['load_vals'] else None
+                ),
+                'total_elevation_m': round(d['elev']),
+                'run_count': d['runs'],
+                'ride_count': d['rides'],
+                'other_count': d['other'],
+            })
+        return result
+
+    def get_monthly_breakdown(self, athlete_id: int) -> list[dict]:
+        """Per-month distance + activity count for every year in the dataset."""
+        rows = (
+            self.db.query(FactActivity)
+            .filter(
+                FactActivity.athlete_id == athlete_id,
+                FactActivity.start_date.isnot(None),
+            )
+            .all()
+        )
+
+        by_ym: dict[tuple[int, int], dict] = {}
+        for r in rows:
+            if not r.start_date:
+                continue
+            key = (r.start_date.year, r.start_date.month)
+            if key not in by_ym:
+                by_ym[key] = {'dist': 0.0, 'acts': 0}
+            by_ym[key]['dist'] += (r.distance_meters or 0) / 1000
+            by_ym[key]['acts'] += 1
+
+        MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        result = []
+        for (year, month) in sorted(by_ym):
+            d = by_ym[(year, month)]
+            result.append({
+                'year': year,
+                'month': month,
+                'month_label': MONTHS[month - 1],
+                'distance_km': round(d['dist'], 1),
+                'activities': d['acts'],
+            })
+        return result
+

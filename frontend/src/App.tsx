@@ -11,6 +11,7 @@ import OperationalDashboard from './pages/operational/OperationalDashboard';
 import ActivityDetailPage from './pages/activity/ActivityDetailPage';
 import StrategicDashboard from './pages/strategic/StrategicDashboard';
 import TacticalDashboard from './pages/tactical/TacticalDashboard';
+import YoYDashboard from './pages/yoy/YoYDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -67,6 +68,17 @@ function useNavItems(): NavItem[] {
         <circle cx="2" cy="12" r="1" /><circle cx="22" cy="12" r="1" />
         <line x1="12" y1="5" x2="12" y2="9" /><line x1="12" y1="15" x2="12" y2="19" />
         <line x1="5" y1="12" x2="9" y2="12" /><line x1="15" y1="12" x2="19" y2="12" />
+      </svg>
+    ),
+  },
+  {
+    href: '/yoy',
+    label: t.nav.yoy,
+    shortLabel: t.nav.shortYoy,
+    icon: (_active: boolean) => (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        <polyline points="17 6 23 6 23 12" />
       </svg>
     ),
   },
@@ -508,6 +520,7 @@ export default function App() {
           <Route path="/operational" element={<ProtectedRoute><OperationalDashboard /></ProtectedRoute>} />
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityDetailPage /></ProtectedRoute>} />
           <Route path="/ml"          element={<ProtectedRoute><MLDashboard /></ProtectedRoute>} />
+          <Route path="/yoy"         element={<ProtectedRoute><YoYDashboard /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

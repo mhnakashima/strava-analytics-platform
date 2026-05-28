@@ -199,95 +199,154 @@ export default function OperationalDashboard() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ backgroundColor: 'var(--c-card)', borderBottom: '1px solid var(--c-border)' }}>
-                  {tableHeaders.map((h, i) => (
-                    <th
-                      key={i}
-                      className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-widest ${
-                        i >= 3 && i <= 6 ? 'text-right' : i === 7 ? 'text-center' : 'text-left'
-                      }`}
-                      style={{ color: 'var(--c-ink3)' }}
+          <>
+            {/* ── Mobile card list ─────────────────────── */}
+            <div className="md:hidden divide-y" style={{ borderColor: 'var(--c-border)' }}>
+              {filtered.length === 0 ? (
+                <div className="px-5 py-12 text-center text-sm space-y-2" style={{ color: 'var(--c-ink3)' }}>
+                  <div className="text-2xl">🔍</div>
+                  <div>{t.operational.noResults}</div>
+                </div>
+              ) : (
+                filtered.map((act) => {
+                  const hasPace = act.activity_type != null && PACE_TYPES.has(act.activity_type);
+                  const clusterKey = act.cluster_label ?? '';
+                  const clusterColors = CLUSTER_COLORS[clusterKey];
+                  const clusterLabel = clusterKey ? (t.operational.clusterLabels[clusterKey] ?? clusterKey) : null;
+                  return (
+                    <div
+                      key={act.activity_id}
+                      onClick={() => navigate(`/activities/${act.activity_id}`)}
+                      className="px-4 py-3 cursor-pointer flex flex-col gap-1.5 active:opacity-70 transition-opacity"
+                      style={{ borderBottomColor: 'var(--c-border)' }}
                     >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="px-5 py-12 text-center text-sm" style={{ color: 'var(--c-ink3)' }}>
-                      <div className="space-y-2">
-                        <div className="text-2xl">🔍</div>
-                        <div>{t.operational.noResults}</div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((act) => {
-                    const hasPace = act.activity_type != null && PACE_TYPES.has(act.activity_type);
-                    const clusterKey = act.cluster_label ?? '';
-                    const clusterColors = CLUSTER_COLORS[clusterKey];
-                    const clusterLabel = clusterKey ? (t.operational.clusterLabels[clusterKey] ?? clusterKey) : null;
-                    return (
-                      <tr
-                        key={act.activity_id}
-                        onClick={() => navigate(`/activities/${act.activity_id}`)}
-                        className="cursor-pointer transition-colors group"
-                        style={{ borderBottom: '1px solid var(--c-border)' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--c-subtle)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
-                      >
-                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: 'var(--c-ink3)' }}>
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="font-semibold text-sm truncate" style={{ color: 'var(--c-ink)' }}>
+                          {ACTIVITY_ICONS[act.activity_type ?? ''] ?? '•'} {act.strava_name ?? '—'}
+                        </span>
+                        <span className="text-xs shrink-0" style={{ color: 'var(--c-ink3)' }}>
                           {act.start_date?.slice(0, 10) ?? '—'}
-                        </td>
-                        <td className="px-4 py-3 max-w-[200px]">
-                          <span className="font-medium truncate block" style={{ color: 'var(--c-ink)' }}>
-                            {act.strava_name ?? '—'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
+                        <span style={{ color: 'var(--c-ink)' }}>{formatDistance(act.distance_km)}</span>
+                        <span style={{ color: 'var(--c-border)' }}>·</span>
+                        <span style={{ color: 'var(--c-ink2)' }}>{formatDuration(act.moving_time_sec)}</span>
+                        {hasPace && act.avg_pace_sec_km && (
+                          <>
+                            <span style={{ color: 'var(--c-border)' }}>·</span>
+                            <span className="font-semibold" style={{ color: '#FC4C02' }}>{formatPace(act.avg_pace_sec_km)}</span>
+                          </>
+                        )}
+                        {act.avg_heartrate && (
+                          <>
+                            <span style={{ color: 'var(--c-border)' }}>·</span>
+                            <span style={{ color: 'var(--c-ink2)' }}>{act.avg_heartrate.toFixed(0)} <span className="text-xs" style={{ color: 'var(--c-ink3)' }}>{t.common.bpm}</span></span>
+                          </>
+                        )}
+                        {clusterColors && clusterLabel && (
+                          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: clusterColors.bg, color: clusterColors.text }}>
+                            {clusterLabel}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1.5">
-                            <span>{ACTIVITY_ICONS[act.activity_type ?? ''] ?? '•'}</span>
-                            <span className="text-xs" style={{ color: 'var(--c-ink2)' }}>{act.activity_type ?? '—'}</span>
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right" style={{ color: 'var(--c-ink)' }}>
-                          {formatDistance(act.distance_km)}
-                        </td>
-                        <td className="px-4 py-3 text-right" style={{ color: 'var(--c-ink)' }}>
-                          {formatDuration(act.moving_time_sec)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {hasPace && act.avg_pace_sec_km
-                            ? <span className="font-medium" style={{ color: '#FC4C02' }}>{formatPace(act.avg_pace_sec_km)}</span>
-                            : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {act.avg_heartrate
-                            ? <span style={{ color: 'var(--c-ink)' }}>{act.avg_heartrate.toFixed(0)} <span style={{ color: 'var(--c-ink3)', fontSize: '11px' }}>{t.common.bpm}</span></span>
-                            : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {clusterColors && clusterLabel
-                            ? <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: clusterColors.bg, color: clusterColors.text }}>{clusterLabel}</span>
-                            : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
-                        </td>
-                        <td className="px-3 py-3">
-                          <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--c-ink3)' }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <polyline points="9 18 15 12 9 6" />
-                          </svg>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* ── Desktop table ────────────────────────── */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ backgroundColor: 'var(--c-card)', borderBottom: '1px solid var(--c-border)' }}>
+                    {tableHeaders.map((h, i) => (
+                      <th
+                        key={i}
+                        className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-widest ${
+                          i >= 3 && i <= 6 ? 'text-right' : i === 7 ? 'text-center' : 'text-left'
+                        }`}
+                        style={{ color: 'var(--c-ink3)' }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-5 py-12 text-center text-sm" style={{ color: 'var(--c-ink3)' }}>
+                        <div className="space-y-2">
+                          <div className="text-2xl">🔍</div>
+                          <div>{t.operational.noResults}</div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((act) => {
+                      const hasPace = act.activity_type != null && PACE_TYPES.has(act.activity_type);
+                      const clusterKey = act.cluster_label ?? '';
+                      const clusterColors = CLUSTER_COLORS[clusterKey];
+                      const clusterLabel = clusterKey ? (t.operational.clusterLabels[clusterKey] ?? clusterKey) : null;
+                      return (
+                        <tr
+                          key={act.activity_id}
+                          onClick={() => navigate(`/activities/${act.activity_id}`)}
+                          className="cursor-pointer transition-colors group"
+                          style={{ borderBottom: '1px solid var(--c-border)' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--c-subtle)'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
+                        >
+                          <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: 'var(--c-ink3)' }}>
+                            {act.start_date?.slice(0, 10) ?? '—'}
+                          </td>
+                          <td className="px-4 py-3 max-w-[200px]">
+                            <span className="font-medium truncate block" style={{ color: 'var(--c-ink)' }}>
+                              {act.strava_name ?? '—'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1.5">
+                              <span>{ACTIVITY_ICONS[act.activity_type ?? ''] ?? '•'}</span>
+                              <span className="text-xs" style={{ color: 'var(--c-ink2)' }}>{act.activity_type ?? '—'}</span>
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right" style={{ color: 'var(--c-ink)' }}>
+                            {formatDistance(act.distance_km)}
+                          </td>
+                          <td className="px-4 py-3 text-right" style={{ color: 'var(--c-ink)' }}>
+                            {formatDuration(act.moving_time_sec)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {hasPace && act.avg_pace_sec_km
+                              ? <span className="font-medium" style={{ color: '#FC4C02' }}>{formatPace(act.avg_pace_sec_km)}</span>
+                              : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {act.avg_heartrate
+                              ? <span style={{ color: 'var(--c-ink)' }}>{act.avg_heartrate.toFixed(0)} <span style={{ color: 'var(--c-ink3)', fontSize: '11px' }}>{t.common.bpm}</span></span>
+                              : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {clusterColors && clusterLabel
+                              ? <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: clusterColors.bg, color: clusterColors.text }}>{clusterLabel}</span>
+                              : <span style={{ color: 'var(--c-ink3)' }}>—</span>}
+                          </td>
+                          <td className="px-3 py-3">
+                            <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--c-ink3)' }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: '1px solid var(--c-border)', backgroundColor: 'var(--c-card)' }}>
