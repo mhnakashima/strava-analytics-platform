@@ -224,7 +224,7 @@ function MonthlyChart({
         <Tooltip
           contentStyle={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, fontSize: 12 }}
           labelStyle={{ color: 'var(--c-ink)', fontWeight: 600 }}
-          formatter={(v: number, name: string) => [`${v} ${distLabel}`, name]}
+          formatter={((v: unknown, name: unknown) => [`${typeof v === 'number' ? v : ''} ${distLabel}`, String(name)]) as never}
         />
         <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
         {selectedYears.map((y) => (

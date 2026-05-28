@@ -1,5 +1,5 @@
 import type React from 'react';
-import { formatDuration, formatPace } from '../../lib/utils';
+import { formatPace } from '../../lib/utils';
 import type { ActivityKPIs } from '../../types';
 import { useT } from '../../hooks/useTranslation';
 
